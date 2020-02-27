@@ -1,6 +1,6 @@
 ##### when COMMAND
 
-Implements a condition in a block ([@](docs/@.md)).
+Implements a condition in a block of tasks ([@](@.md)).
 
 Do following tasks only if the specified command succeeds.
 
