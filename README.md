@@ -21,10 +21,13 @@ At the moment, bashible has been used on Arch linux. It may not be compatible wi
 
 Suggestions and bugfixes are welcome! :-)
 
+
+## Example output
+
 ![Example output](bashible.png)
 
 
-## Example bashible script.ble
+## Example script.ble
 
 `@` represents a block of tasks, `-` represents a task. Both `@` and `-` are just bash functions with arguments.
 
@@ -158,3 +161,21 @@ run it
 ### network-oriented functions - found in bashible.net module
 
 [wait_for_tcp MATCH up|down](docs/wait_for_tcp.md)  
+
+
+## TODO
+
+More docs and examples.
+
+Modularize. The bashible core in the version 1.0 should contain only necessary functions and won't change anymore. For instance, the [delayed](docs/delayed.md) and [unless_already COMMAND ARGS ...](docs/unless_already.md) functions need two temporary files now to be created on every bashible start. These functions should go into optional modules.
+
+Better process handling. Killing ALL children on TERM, not only these known to the parent process.
+
+Create an easy module upload/download mechanism using github repo.
+
+Create self-tests. Bashible uses grep, sed, etc. which are platform specific.
+
+Make bashible multiplatform.
+
+Create more modules and/or integrate existing Bash libraries.
+
