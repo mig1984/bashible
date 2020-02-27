@@ -165,17 +165,16 @@ run it
 
 ## TODO
 
-More docs and examples.
+Write more docs and examples.
 
-Modularize. The bashible core in the version 1.0 should contain only necessary functions and won't change anymore. For instance, the [delayed](docs/delayed.md) and [unless_already COMMAND ARGS ...](docs/unless_already.md) functions need two temporary files now to be created on every bashible start. These functions should go into optional modules.
+Modularize. The bashible core in the version 1.0 should contain only necessary functions and should not ever change. For instance, the [delayed](docs/delayed.md) and [unless_already COMMAND ARGS ...](docs/unless_already.md) functions now need two temporary files. These files are created on every bashible startup. These functions should go into optional modules instead.
 
-Better process handling. Killing ALL children on TERM, not only these known to the parent process.
+Better process handling. Killing ALL children on TERM, not just these known to the parent process.
 
-Create an easy module upload/download mechanism using github repo.
+Create an easy way of module upload/download using a github repo.
 
-Create self-tests. Bashible uses grep, sed, etc. which are platform specific.
+Create self-tests. Bashible uses GNU/grep, GNU/sed and other programs which may not work properly on all platforms.
 
 Make bashible multiplatform.
 
 Create more modules and/or integrate existing Bash libraries.
-
