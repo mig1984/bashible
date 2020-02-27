@@ -1,22 +1,22 @@
 #!/usr/local/bin/bashible
 
+use edit
+
 @ Prerequisities
   - test $UID -eq 0
   - call "./system_base.ble"
-  - source "$BDIR/bashible.edit"
 
 @ Source RVM profile automatically after root login
   - add_line "source /etc/profile.d/rvm.sh" /root/.bashrc
 
 @ Skipping RVM install if already
-  - when not not which rvm
+  - when not which rvm
   - finish "already installed"
 
 @ Creating tmp dir
   - mkdir -p /tmp/rvm
 
-# Now everything happens in the temp dir
-
+# Now everything will happen in the tmp dir
 base_dir /tmp/rvm
 
 @ Install mpapis public key

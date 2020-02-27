@@ -1,10 +1,11 @@
 #!/usr/local/bin/bashible
 
+use edit
+
 @ Prerequisities
   - test $UID -eq 0
-  - not empty echo $IP
+  - not empty echo $IP  # must be set in the environment
   - not empty echo $HOST
-  - source "$BDIR/bashible.edit"
 
 @ Installing base utils
   - yum_install sudo which tar wget mailx bzip2 rsync screen openssl-devel
@@ -20,4 +21,3 @@
 
 @ Fixing sshd_config
   - add_line "UseDNS no" /etc/ssh/sshd_config
-

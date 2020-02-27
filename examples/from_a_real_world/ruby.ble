@@ -1,11 +1,12 @@
 #!/usr/local/bin/bashible
 
+use edit
+source ./my_functions.sh
+
 @ Prerequisities
   - test $UID -eq 0
   - call "./system_base.ble"
   - call "./rvm.ble"
-  - source "$BDIR/bashible.edit"
-  - source "$BDIR/bashible.my_functions"
 
 @ Sourcing RVM profile
   # after RVM is installed, it's necessary to "logout and login",
@@ -17,8 +18,6 @@
 
 @ Installing Ruby using RVM
   - when not evaluate 'which ruby | grep 2.2'
-  # see: rvm list known
-  # should match a version defined in the Gemfile
   - rvm install 2.2
 
 @ Patching/creating .gemrc
