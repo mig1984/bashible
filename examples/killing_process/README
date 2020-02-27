@@ -1,0 +1,8 @@
+This example demonstrates killing parent process which will kill it's children. In pure bash, children processes stay alive unless you run the script in interactive mode.
+
+usage:
+
+bashible ./main.ble
+
+CTRL-C or send SIGTERM to the main process
+

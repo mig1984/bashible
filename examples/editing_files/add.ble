@@ -1,0 +1,15 @@
+#!/usr/local/bin/bashible
+
+use edit
+
+- call ./generate_sshd_config.ble 23 127.0.0.1
+
+@ Uncommenting lines in the config
+  - uncomment_lines_matching 'UseDNS' sshd_config
+  - uncomment_lines_matching 'X11Forwarding no' sshd_config
+
+@ Adding lines to the end
+  - add_line "This will be at the end" sshd_config
+
+@ Replacing whole lines
+  - replace_lines_matching 'AllowTcpForwarding' 'AllowTcpForwarding yes' sshd_config

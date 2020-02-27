@@ -1,0 +1,35 @@
+#!/usr/local/bin/bashible
+
+@ Prerequisities
+  - test $UID -eq 0
+  - call "./system_base.ble"
+  - call "./rvm.ble"
+  - source "$BDIR/bashible.edit"
+  - source "$BDIR/bashible.my_functions"
+
+@ Sourcing RVM profile
+  # after RVM is installed, it's necessary to "logout and login",
+  # otherwise rvm fails with "rvm command not found"
+  - source "/etc/profile.d/rvm.sh"
+
+@ Enabling RVM autolibs
+  - rvm autolibs enable
+
+@ Installing Ruby using RVM
+  - when not evaluate 'which ruby | grep 2.2'
+  # see: rvm list known
+  # should match a version defined in the Gemfile
+  - rvm install 2.2
+
+@ Patching/creating .gemrc
+  - touch /root/.gemrc
+  - add_line 'gem: --no-ri --no-rdoc' /root/.gemrc
+
+@ Installing bundler
+  - install_gem bundler
+
+@ Installing gem ZAML and fixing its bug
+  - install_gem zaml
+  for i in /usr/local/rvm/gems/ruby-*/gems/zaml-*/lib/zaml.rb; do
+    - prepend_line "# encoding: US-ASCII" "$i"
+  done

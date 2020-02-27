@@ -1,0 +1,10 @@
+expects bashible to be installed in /usr/local/bin (including it's modules)
+
+then run
+
+$ bashible ./add.ble
+
+or
+
+$ bashible ./del.ble
+
