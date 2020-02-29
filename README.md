@@ -8,12 +8,11 @@ Features:
   - unhandled failures prevention
   - skipping already done tasks
   - command chaining
-  - working directory as expected
+  - working directory always as expected
   - variable checking
   - dependencies; calling sub-scripts
   - delayed tasks executed on finish
-  - child termination handler
-  - nice output
+  - child termination handler; no processes left running
   - modules: template engine, config editing, etc.
   - nice output
 

@@ -47,7 +47,7 @@ ble_print_fail() {
 }
 
 ble_print_finish() {
-  echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m FINISH \033[0m\n" >&2
+  echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m $BASHPID FINISH \033[0m\n" >&2
 }
 
 ble_print_continues() {
@@ -59,29 +59,28 @@ ble_do_finish() {
     ble_print_finish
   else
     if ((_FINISHED==0 && $1!=42)); then
-      ble_print_fail "Unhandled failure, exit code $1"
+      ble_print_fail "Unhandled failure, exit code $1 (PID=$BASHPID, CWD is $PWD)"
     fi
   fi
 }
 
-# trap EXIT in the main process
-ble_trap_exit() {
-  trap "ble_do_finish \$?; rm \"\${_BLE_ALREADY}\" \"\${_BLE_DELAYED}\" " EXIT
+ble_trap_exit_top() {
+  trap "rm \"\${_BLE_ALREADY}\" \"\${_BLE_DELAYED}\"" EXIT
 }
 
-# trap EXIT in the subprocess
-ble_trap_child_exit() {
+ble_trap_exit() {
   trap "ble_do_finish \$?" EXIT
 }
 
 ble_trap_termination(){
   trap "
-    if test \${_CHILD} -ne 0; then
-      kill -SIGINT \${_CHILD}
-    else
-      ble_print_fail 'process terminated' # last child will print it
+    if toplevel && ((\$$==\$BASHPID)); then
+      # in the toplevel script and not it's subshell
+      ble_print_fail \"process terminated, sending TERM to all processes in my process group \$\$\"
+      trap - SIGHUP SIGINT SIGQUIT SIGTERM
+      kill -TERM -\$\$
     fi
-    ble_exit 143
+    ble_exit 42
     " SIGHUP SIGINT SIGQUIT SIGTERM
 }
 
@@ -91,6 +90,21 @@ ble_serialize_command() {
   IFS=$oldIFS
 }
 
+ble_check_cmd() {
+  quiet type "$1" || fail "command '$@' not found (CWD is $PWD)"
+}
+
+ble_handle_failure() {
+ local ex=$1
+ shift
+ if ((ex>0)); then
+   if ((ex!=42 && ex!=43)); then
+     fail "command '$@' failed with exit code $ex (CWD is $PWD)"
+   else
+     ble_exit $ex
+   fi
+ fi
+}
 
 ### CORE FUNCTIONS ###
 
@@ -101,20 +115,26 @@ ble_serialize_command() {
 }
 
 -() {
+  if test $# -eq 0; then
+    if ((_SKIP==0)); then
+      print_info "loop"
+      return 1
+    else
+      return 0
+    fi
+  fi
+
   if ((_SKIP!=1)); then
     ble_print_task "$*"
+    ble_check_cmd "$1"
+    _WHEN_USED=0
     local ex=0
-    set +o errexit # must be temporarily disabled to be able to handle fails
-    "$@"
-    ex=$? # must be tested afterwards to allow exit on pipefail (do not use || on the line above)
-    set -o errexit
-    if ((ex>0)); then
-      if ((ex!=42 && ex!=43)); then
-        ble_print_fail "task '$@' failed with exit code $ex (cwd is $PWD)"
-        ble_exit 42
-      else
-        ble_exit $ex
-      fi
+    "$@" || ex=$?
+    if ((_WHEN_USED==1)); then    # when has been used
+      ((ex!=0)) && _SKIP=1        # set skip mode depending on the status
+      return 0                    # and return 0
+    else
+      ble_handle_failure $ex "$@"
     fi
   fi
 }
@@ -140,40 +160,34 @@ base_dir() {
   cd "${_BASE_DIR}" || fail "can't chdir to base dir '${_BASE_DIR}'"
 }
 
-runCommand() {
-  local script=$1
-  shift
-  local path=`absolute_path "$script"`
-
-  _BASE_DIR=`dirname "$path"`
-  _ORIG_BASE_DIR=${_BASE_DIR}
-
-  if test ${#_BLE_NAV} -eq 0 ; then
-    export _BLE_NAV="`basename $path | sed "s/\.ble\$//" `"
-  else
-    export _BLE_NAV="${_BLE_NAV} -> `basename $path | sed "s/\.ble\$//" `"
-  fi
-
+ble_run_script() {
   ble_print_start
-  cd "${_BASE_DIR}" || fail "can't enter base dir '${_BASE_DIR}'"
   _FINISHED=0
-  source ./`basename "$path"`
+  source "$1"
   # unless it gets here, unhandled exit happened -> the exit handler will react on it because _FINISHED will be still set to 0
   _FINISHED=1
 }
 
+ble_set_nav_and_level() {
+  let _BLE_LEVEL=${_BLE_LEVEL}+1
+  if test ${#_BLE_NAV} -eq 0 ; then
+    _BLE_NAV="`basename ${_SCRIPT_PATH} | sed "s/\.ble\$//" `"
+  else
+    _BLE_NAV="${_BLE_NAV} -> `basename ${_SCRIPT_PATH} | sed "s/\.ble\$//" `"
+  fi
+}
+
 call() {
   (
+     ble_set_nav_and_level
+     export _BLE_LEVEL
+     export _BLE_NAV
      ble_trap_termination
-     ble_trap_child_exit
-     set -eu -o pipefail
-     runCommand "$@"
-  ) &
-  _CHILD=$!
-  wait -n
+     ble_trap_exit
+    # set -eu -o pipefail +m  # FIXME: really inherited?
+     ble_run_script "$@"
+  )
   local ex=$?
-  _CHILD=0
-
   if ((ex>0)); then
     return $ex
   else
@@ -187,30 +201,20 @@ delayed() {
 }
 
 dir_empty() {
-  local out=` ls -A $1 | wc -l` || return 1
-  ((out>0))
+  local buf
+  buf=` ls -A $1 | wc -l ` || ble_handle_failure $? "$@"
+  ((buf>0))
 }
 
 empty() {
-  quiet type $1 || fail "empty: command '$1' not found"
+  ble_check_cmd "$1"
   local buf
-  local ex=0
-  eval "
-    buf=\"\`  \"\$@\"  \`\"
-  " || ex=$?
-  echo "$buf"
-  if ((ex>0)); then
-    if ((ex!=42 && ex!=43)); then
-      fail "empty: command '$@' failed with exited code $ex (cwd is $PWD)"
-    else
-      ble_exit $ex
-    fi
-  fi
+  buf=` "$@" || return $? ` || ble_handle_failure $? "$@"
   test ${#buf} -eq 0
 }
 
 evaluate() {
-  eval "$@" || return $?  # || is to bypass exit on pipefail
+  eval "$@" || return $?  # || is here to bypass the pipefail exit
 }
 
 fail() {
@@ -231,21 +235,15 @@ finish() {
   ble_exit 0
 }
 
+
 fill_var() {
-  local name=$1; shift
-  local value;
-  quiet type "$1" || fail "fill_var: command '$1' not found"
-  value=`  "$@" || return $? `
-  local ex=$?
-  if ((ex>0)); then
-    if ((ex!=42 && ex!=43)); then  # already handled
-      fail "fill_var: command '$@' failed with exited code $ex (cwd is $PWD)"
-    else
-      ble_exit $ex
-    fi
-  fi
-  print_info "$name=$value"
-  eval "$name=\$value"
+  local var=$1
+  shift
+  ble_check_cmd "$1"
+  local buf
+  buf=` "$@" || return $? ` || ble_handle_failure $? "$@"
+  print_info "$var=$buf"
+  eval "$var=\$buf"
 }
 
 halt() {
@@ -258,14 +256,13 @@ halt() {
 }
 
 may_fail() {
-  quiet type $1 || fail "may_fail: command '$1' not found"
-  local ex=0
-  "$@" || ex=$? # || bypasses the pipefail exit
-  return 0
+  # but still exit if the command does not exist
+  ble_check_cmd "$1"
+  "$@" || return 0
 }
 
 not() {
-  quiet type $1 || fail "not: command '$1' not found"
+  ble_check_cmd "$1"
   "$@" && return 1 || return 0
 }
 
@@ -273,8 +270,8 @@ output_to() {
   local dest=$1
   shift
   test "${#dest}" -gt 0 || fail "output_to: no destination file specified"
-  quiet type $1 || fail "output_to: command '$1' not found"
-  if "$@" > $dest.tmp; then
+  ble_check_cmd "$1"
+  if "$@" > $dest.tmp || ble_handle_failure $? "$@"; then
     mv "$dest.tmp" "$dest"
   else
     rm "$dest.tmp" 2>/dev/null
@@ -310,9 +307,9 @@ reset_base_dir() {
 result() {
   local name=$1
   shift
-  quiet type $1 || fail "result: command '$1' not found"
+  ble_check_cmd "$1"
   local ex=0
-  "$@" || ex=$? # || is to bypass pipefail exit
+  "$@" || ex=$? # || is here to bypass pipefail exit
   eval "$name() {
     if test \$# -gt 0; then
       test \"$ex\" \"\$@\"; # with arguments
@@ -336,8 +333,8 @@ var_empty() {
 }
 
 when() {
-  quiet type "$1" || fail "when: command '$1' not found"
-  "$@" || { _SKIP=1; return 0; }
+  _WHEN_USED=1
+  "$@" || return $?  # || is here to bypass the pipefail exit
 }
 
 unless_already() {
@@ -373,33 +370,35 @@ if test ${#1} -eq 0; then
   exit 1
 fi
 
-# setup environment variables (these are used by child scripts, too)
-let _BLE_LEVEL=${_BLE_LEVEL}+1
-_BLE_NAV=${_BLE_NAV}         # magic :-)
+# variables inherited from the parent
+_BLE_LEVEL=${_BLE_LEVEL}     # magic :-)
+_BLE_NAV=${_BLE_NAV}
 _BLE_ALREADY=${_BLE_ALREADY}
 _BLE_DELAYED=${_BLE_DELAYED}
-export _BLE_LEVEL            # level of the script; toplevel == 1
-export _BLE_NAV              # nice navigation
 
 # now we can set defaults to be strict
-set -eu -o pipefail
+set -eu -o pipefail +m
 
-# setup variables (these are per script only)
 _ORIG_DIR=` pwd `
 _BLE=` absolute_path "$0" ` # the bashible script itself
 test ${#_BLE} -gt 0 || fail "can't get _BLE; is 'readlink' command present?"
 _BLE_DIR=` dirname "${_BLE}" `  # bashible modules reside there
 test ${#_BLE_DIR} -gt 0     || fail "can't get _BLE_DIR; is 'dirname' command present?"
 test ` basename "${_BLE}" ` = bashible || fail "the 'basename' command is probably not present"
+_SCRIPT_PATH=`absolute_path "$1"`
+shift
+_BASE_DIR=`dirname "${_SCRIPT_PATH}"`
+_ORIG_BASE_DIR=${_BASE_DIR}
+
+cd "${_BASE_DIR}" || fail "can't enter base dir '${_BASE_DIR}'"
+
 _SKIP=0                      # skipping mode? will be reset on a next block
-_BASE_DIR=''                 # will be set by the 'call'
-_ORIG_BASE_DIR=''            # will be set by the 'call'
-_CHILD=0                     # pid of child to be killed on TERM
+_WHEN_USED=0                 # "-" will set skipping mode depending on the final result
 _FINISHED=0                  # to detect unhandled exits (pipefail)
 
-# traps unhandled failures and kill children on term
-ble_trap_exit
+ble_set_nav_and_level
 ble_trap_termination
+ble_trap_exit_top
 
 if toplevel; then
 
@@ -410,32 +409,45 @@ if toplevel; then
   export _BLE_ALREADY=$(mktemp) # store already called commands
   test ${#_BLE_ALREADY} || fail "_BLE_ALREADY tempfile can not be created, is the 'mktemp' command present?"
 
-  # run the top-level script
-  runCommand "$@"
-  test $? -ne 0 && ble_exit $? # test must be split from the call command to detect pipefail
+  # this is the toplevel script
+  # will be run in on the background, because the top process must be able to catch TERM and react immediately
+  (
+    export _BLE_LEVEL
+    export _BLE_NAV
 
-  # run delayed commands
-  # (they will exit immediately on failure unless prefixed by "may_fail")
-  if test -s "${_BLE_DELAYED}"; then
-    export _BLE_NAV='DELAYED'
-    ble_print_start
-    IFS=$'\n'; while read line; do
-      readarray -d $'\t' -t ary <<< $line
-      cd "${ary[0]}"      # original CWD
-      ary=("${ary[@]:1}") # shift
-      - "${ary[@]}"       # run the command with arguments via '-'; it may exit nonzero
-    done < "${_BLE_DELAYED}"
-    ble_print_finish
-  fi
+    ble_trap_termination
+    ble_trap_exit
+    ble_run_script "./`basename "${_SCRIPT_PATH}"`" "$@"
+    test $? -ne 0 && ble_exit $? # test must be split from the run_script to enable exit on pipefail
 
-  ble_exit 0
+    # run delayed commands
+    # (they will exit immediately on failure unless prefixed by "may_fail")
+    if test -s "${_BLE_DELAYED}"; then
+      export _BLE_NAV='DELAYED'
+      ble_print_start
+      IFS=$'\n'; while read line; do
+        readarray -d $'\t' -t ary <<< $line
+        cd "${ary[0]}"      # original CWD
+        ary=("${ary[@]:1}") # shift
+        - "${ary[@]}"       # run the command with arguments via '-'
+      done < "${_BLE_DELAYED}"
+      ble_print_finish
+    fi
+
+  ) &
+  wait -n
+  ble_exit $?
 
 else
 
-  # this is a child script, let's run it
+  # this is a child script
 
-  runCommand "$@"
+  export _BLE_LEVEL
+  export _BLE_NAV
 
+  ble_trap_termination
+  ble_trap_exit
+  ble_run_script "./`basename "${_SCRIPT_PATH}"`" "$@"
   ble_exit $?
 
 fi
