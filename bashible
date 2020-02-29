@@ -47,7 +47,7 @@ ble_print_fail() {
 }
 
 ble_print_finish() {
-  echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m $BASHPID FINISH \033[0m\n" >&2
+  echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m FINISH \033[0m\n" >&2
 }
 
 ble_print_continues() {
@@ -76,9 +76,9 @@ ble_trap_termination(){
   trap "
     if toplevel && ((\$$==\$BASHPID)); then
       # in the toplevel script and not it's subshell
-      ble_print_fail \"process terminated, sending TERM to all processes in my process group \$\$\"
+      ble_print_fail \"process terminated, sending TERM to all processes in the process group \${_BLE_SUBSHELL_PID}\"
       trap - SIGHUP SIGINT SIGQUIT SIGTERM
-      kill -TERM -\$\$
+      kill -TERM -\${_BLE_SUBSHELL_PID}
     fi
     ble_exit 42
     " SIGHUP SIGINT SIGQUIT SIGTERM
@@ -184,7 +184,7 @@ call() {
      export _BLE_NAV
      ble_trap_termination
      ble_trap_exit
-    # set -eu -o pipefail +m  # FIXME: really inherited?
+     set -eu -o pipefail +m
      ble_run_script "$@"
   )
   local ex=$?
@@ -377,11 +377,11 @@ _BLE_NAV=${_BLE_NAV}
 _BLE_ALREADY=${_BLE_ALREADY}
 _BLE_DELAYED=${_BLE_DELAYED}
 
-# now we can set defaults to be strict
-set -eu -o pipefail +m
+# now we can set defaults to be strict, will use a new process group
+set -eu -o pipefail -m
 
 _ORIG_DIR=` pwd `
-_BLE=` absolute_path "$0" ` # the bashible script itself
+_BLE=` absolute_path "$0" `  # the bashible script itself
 test ${#_BLE} -gt 0 || fail "can't get _BLE; is 'readlink' command present?"
 _BLE_DIR=` dirname "${_BLE}" `  # bashible modules reside there
 test ${#_BLE_DIR} -gt 0     || fail "can't get _BLE_DIR; is 'dirname' command present?"
@@ -390,6 +390,7 @@ _SCRIPT_PATH=`absolute_path "$1"`
 shift
 _BASE_DIR=`dirname "${_SCRIPT_PATH}"`
 _ORIG_BASE_DIR=${_BASE_DIR}
+_BLE_SUBSHELL_PID=0
 
 cd "${_BASE_DIR}" || fail "can't enter base dir '${_BASE_DIR}'"
 
@@ -416,6 +417,8 @@ if toplevel; then
     export _BLE_LEVEL
     export _BLE_NAV
 
+    set +m # keep the same process group
+
     ble_trap_termination
     ble_trap_exit
     ble_run_script "./`basename "${_SCRIPT_PATH}"`" "$@"
@@ -436,12 +439,15 @@ if toplevel; then
     fi
 
   ) &
+  _BLE_SUBSHELL_PID=$!
   wait -n
   ble_exit $?
 
 else
 
   # this is a child script
+
+  set +m  # keep the same process group
 
   export _BLE_LEVEL
   export _BLE_NAV
