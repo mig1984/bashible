@@ -76,9 +76,11 @@ ble_trap_termination(){
   trap "
     if toplevel && ((\$$==\$BASHPID)); then
       # in the toplevel script and not it's subshell
-      ble_print_fail \"process terminated, sending TERM to all processes in the process group \${_BLE_SUBSHELL_PID}\"
-      trap - SIGHUP SIGINT SIGQUIT SIGTERM
-      kill -TERM -\${_BLE_SUBSHELL_PID}
+      if ((_BLE_SUBSHELL_PID)); then
+        ble_print_fail \"process terminated, sending TERM to all processes in the process group \${_BLE_SUBSHELL_PID}\"
+        trap - SIGHUP SIGINT SIGQUIT SIGTERM
+        kill -TERM -\${_BLE_SUBSHELL_PID}
+      fi
     fi
     ble_exit 42
     " SIGHUP SIGINT SIGQUIT SIGTERM
@@ -441,6 +443,7 @@ if toplevel; then
   ) &
   _BLE_SUBSHELL_PID=$!
   wait -n
+  _BLE_SUBSHELL_PID=0
   ble_exit $?
 
 else
