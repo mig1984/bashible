@@ -141,12 +141,12 @@ ble_handle_failure() {
 
 absolute_path() {
   local path
-  if egrep -e '^\s+\./' <<< $1; then
-    # $1 is a relative path
-    path="$(cd $(dirname $1); pwd)/$(basename $1)"
-  else
+  if egrep -e '^\s*\//' <<< $1; then
     # $1 is an absolute path or a command (without a path)
     path=$1
+  else
+    # $1 is a relative path
+    path="$(cd $(dirname $1); pwd)/$(basename $1)"
   fi
   test ${#path} -gt 0 || fail "absolute_path empty on '$1'"
   echo "$path"
@@ -388,7 +388,7 @@ test ${#_BLE_DIR} -gt 0     || fail "can't get _BLE_DIR; is 'dirname' command pr
 test ` basename "${_BLE}" ` = bashible || fail "the 'basename' command is probably not present"
 _SCRIPT_PATH=`absolute_path "$1"`
 shift
-_BASE_DIR=`dirname "${_SCRIPT_PATH}"`
+base_dir "`dirname "${_SCRIPT_PATH}"`"
 _ORIG_BASE_DIR=${_BASE_DIR}
 _BLE_SUBSHELL_PID=0
 
