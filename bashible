@@ -277,11 +277,13 @@ output_to() {
   shift
   test "${#dest}" -gt 0 || fail "output_to: no destination file specified"
   ble_check_cmd "$1"
-  if "$@" | tee $dest.tmp || ble_handle_failure $? "$@"; then
+  local ex=0
+  "$@" | tee $dest.tmp || ex=$?  # || bypass pipefail error
+  if test $ex -eq 0; then
     mv "$dest.tmp" "$dest"
   else
     rm "$dest.tmp" 2>/dev/null
-    return 1
+    ble_handle_failure $ex "$@"
   fi
 }
 
