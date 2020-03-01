@@ -1,3 +1,3 @@
 echo "I am a child process with PID $BASHPID"
 
-- call ./loop.ble
+- call loop

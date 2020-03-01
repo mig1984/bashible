@@ -2,7 +2,7 @@
 
 use edit
 
-- call ./generate_sshd_config.ble 23 127.0.0.1
+- call generate_sshd_config 23 127.0.0.1
 
 @ Uncommenting lines in the config
   - uncomment_lines_matching 'UseDNS' sshd_config
