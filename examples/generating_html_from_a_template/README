@@ -2,4 +2,4 @@ expects bashible to be installed in /usr/local/bin (including it's modules)
 
 then run
 
-$ bashible generate.ble
+$ bashible generate.bash

@@ -2,7 +2,7 @@ This example demonstrates killing parent process which will kill it's children. 
 
 usage:
 
-bashible ./main.ble
+bashible ./main.bash
 
 CTRL-C or send SIGTERM to the main process
 
