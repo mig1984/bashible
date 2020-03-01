@@ -112,7 +112,7 @@ run it
 [absolute_path PATH](docs/absolute_path.md)  
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  
-[call SCRIPT_NAME ARGS ...](docs/call.md)  
+[run PATH ARGS ...](docs/run.md)  
 [delayed COMMAND ARGS ...](docs/delayed.md)  
 [dir_empty PATH](docs/dir_empty.md)  
 [empty COMMAND ARGS ...](docs/empty.md)  

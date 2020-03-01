@@ -2,4 +2,4 @@
 
 echo "I am main process with pid $$"
 
-- call child
+- run child.bash

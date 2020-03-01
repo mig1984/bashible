@@ -2,7 +2,7 @@
 
 use edit
 
-- call generate_sshd_config 23 127.0.0.1
+- run generate_sshd_config.bash 23 127.0.0.1
 
 @ Edit config
   - comment_lines_matching 'UseDNS' sshd_config
