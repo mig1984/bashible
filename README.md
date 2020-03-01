@@ -26,7 +26,7 @@ Suggestions and bugfixes are welcome! :-)
 ![Example output](bashible.png)
 
 
-## Example script.ble
+## Example script.bash
 
 `@` represents a block of tasks, `-` represents a task. Both `@` and `-` are just bash functions with arguments.
 
