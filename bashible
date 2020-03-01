@@ -5,7 +5,7 @@
 # https://github.com/mig1984/bashible
 
 ble_version() {
-  echo 0.2
+  echo 0.3
 }
 
 ble_help() {
@@ -353,7 +353,7 @@ unless_already() {
 
 use() {
   for i in "$@"; do
-    source "${_BLE_DIR}/bashible.$i" || fail "use: can't load ${_BLE_DIR}/bashible.$i"
+    source "${_BLE_DIR}/bashible.$i.bash" || fail "use: can't load ${_BLE_DIR}/bashible.$i.bash"
   done
 }
 

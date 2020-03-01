@@ -1,4 +1,4 @@
-##### call PATH [ARG1] [ARG2] ...
+##### call SCRIPT_NAME [ARG1] [ARG2] ...
 
 Runs another bash(ile) script using "source" instead of executing it as a command. Avoids multiple parsing of bashible itself. 
 The sourced script runs in a new subprocess, therefore it won't affect the caller.
@@ -12,12 +12,12 @@ Use [delayed](delayed.md) to postpone a call to the very end of the process. The
 
 ```bash
 @ Prerequisities
-  - call ./system-base.ble
-  - call ./install-redis.ble
-  - call ./install-nginx.ble
+  - call system_base
+  - call install-redis
+  - call install-nginx
 
 @ Creating a virtual host
-  - call ./create-virtual-host.ble example.com
+  - call create-virtual-host example.com
   - delayed unless_already systemd nginx reload
 ```
 

@@ -88,7 +88,7 @@ mv bashible.edit /usr/local/bin
 Run the script
 
 ```bash
-bashible my-script.ble ARG1 ARG2 ...
+bashible my-script.bash ARG1 ARG2 ...
 ```
 
 or put she-bang in the beginning of the script and then run it directly
@@ -100,7 +100,7 @@ or put she-bang in the beginning of the script and then run it directly
 run it
 
 ```bash
-./my-script.ble ARG1 ARG2 ...
+./my-script.bash ARG1 ARG2 ...
 ```
 
 ## Functions
@@ -112,7 +112,7 @@ run it
 [absolute_path PATH](docs/absolute_path.md)  
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  
-[call PATH ARGS ...](docs/call.md)  
+[call SCRIPT_NAME ARGS ...](docs/call.md)  
 [delayed COMMAND ARGS ...](docs/delayed.md)  
 [dir_empty PATH](docs/dir_empty.md)  
 [empty COMMAND ARGS ...](docs/empty.md)  
