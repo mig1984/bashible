@@ -133,7 +133,10 @@ ble_handle_failure() {
     local ex=0
     "$@" || ex=$?
     if ((_WHEN_USED==1)); then    # when has been used
-      ((ex!=0)) && _SKIP=1        # set skip mode depending on the status
+      if ((ex!=0)); then
+        print_info "skipping following tasks"
+        _SKIP=1        # set skip mode depending on the status
+      fi
       return 0                    # and return 0
     else
       ble_handle_failure $ex "$@"
@@ -274,7 +277,7 @@ output_to() {
   shift
   test "${#dest}" -gt 0 || fail "output_to: no destination file specified"
   ble_check_cmd "$1"
-  if "$@" > $dest.tmp || ble_handle_failure $? "$@"; then
+  if "$@" | tee $dest.tmp || ble_handle_failure $? "$@"; then
     mv "$dest.tmp" "$dest"
   else
     rm "$dest.tmp" 2>/dev/null
