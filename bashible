@@ -411,7 +411,6 @@ ble_trap_top_exit
   set +m
 
   ble_set_variables "$1"
-
   ble_trap_termination
   ble_trap_exit
   ble_cd_basedir

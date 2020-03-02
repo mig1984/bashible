@@ -1,6 +1,6 @@
 #### orig_dir
 
-Output path to the directory from which the script has been executed. (Bashible automatically switches to the script's directory on start.)
+Temporarily switches into the directory from which the script has been executed. (Bashible automatically switches to the script's directory on start.)
 
 To switch into it, do
 
@@ -10,7 +10,7 @@ To switch into it, do
 echo I am in the script's directory now
 
 @ This is a first block
-  - cd `orig_dir`
+  - orig_dir
   - echo I am in the original directory now
 
 @ Another block
