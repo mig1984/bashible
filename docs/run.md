@@ -1,9 +1,7 @@
 ##### run PATH [ARG1] [ARG2] ...
 
-Runs another bash(ile) script using "source" instead of executing it as a command. Avoids multiple parsing of bashible itself.
+Runs another bashible script using "source". Avoids multiple parsing of bashible itself.
 The sourced script runs in a new subprocess, therefore it won't affect the caller.
-
-Working directory is set to the same directory where the script resides.
 
 Use "unless_already" to prevent multiple runs [unless_already](unless_already.md).
 
