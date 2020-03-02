@@ -50,25 +50,42 @@ ble_cd_basedir() {
   cd "${_BASE_DIR}" || fail "can't enter base dir '${_BASE_DIR}'"
 }
 
+ble_set_top_variables() {
+  set +u
+  toplevel || fail "use 'run' to run child bashible scripts instead of running them directly!"
+  set -u
+  export _BLE_LEVEL=0
+  export _BLE_NAV=''
+  export _BLE=` absolute_path "$1" ` # the bashible script itself
+  test ` basename "${_BLE}" ` = bashible || fail "the 'basename' command is probably not present"
+  export _BLE_DELAYED=$(mktemp) # store commands run at the end
+  test ${#_BLE_DELAYED} || fail "_BLE_DELAYED tempfile can not be created, is the 'mktemp' command present?"
+  export _BLE_ALREADY=$(mktemp) # store already run commands
+  test ${#_BLE_ALREADY} || fail "_BLE_ALREADY tempfile can not be created, is the 'mktemp' command present?"
+  _BLE_SUBSHELL_PID=0
+}
+
 ble_set_variables() {
-  _SCRIPT_PATH=`absolute_path "$1"`
-  _ORIG_DIR=` pwd `
-  base_dir "`dirname "${_SCRIPT_PATH}"`"
-  _ORIG_BASE_DIR=${_BASE_DIR}
+  _BLE_ORIG_DIR=` pwd `
+  _BLE_DIR=` absolute_path "${_BLE}" `  # bashible modules reside there
+  _BLE_SCRIPT_PATH=`absolute_path "$1"`
+  base_dir "`dirname "${_BLE_SCRIPT_PATH}"`"
+  _BLE_ORIG_BASE_DIR=${_BASE_DIR}
   let _BLE_LEVEL=${_BLE_LEVEL}+1
-  export _BLE_LEVEL
   if test ${#_BLE_NAV} -eq 0 ; then
-    export _BLE_NAV="`basename ${_SCRIPT_PATH} | sed "s/\.bash\$//" `"
+    _BLE_NAV="`basename ${_BLE_SCRIPT_PATH} | sed "s/\.bash\$//" `"
   else
-    export _BLE_NAV="${_BLE_NAV} -> `basename ${_SCRIPT_PATH} | sed "s/\.bash\$//" `"
+    _BLE_NAV="${_BLE_NAV} -> `basename ${_BLE_SCRIPT_PATH} | sed "s/\.bash\$//" `"
   fi
-  _SKIP=0                      # skipping mode? will be reset on a next block
-  _WHEN_USED=0                 # "-" will set skipping mode depending on the final result
-  _FINISHED=0                  # to detect unhandled exits (pipefail)
+  _BLE_SKIP=0                      # skipping mode? will be reset on a next block
+  _BLE_WHEN_USED=0                 # "-" will set skipping mode depending on the final result
+  _BLE_FINISHED=0                  # to detect unhandled exits (pipefail)
+  export _BLE_NAV
+  export _BLE_LEVEL
 }
 
 ble_exit() {
-  _FINISHED=1
+  _BLE_FINISHED=1
   exit $1
 }
 
@@ -76,13 +93,13 @@ ble_do_finish() {
   if (($1==0 || $1==43)); then
     ble_print_finish
   else
-    if ((_FINISHED==0 && $1!=42)); then
+    if ((_BLE_FINISHED==0 && $1!=42)); then
       ble_print_fail "Unhandled failure, exit code $1 (PID=$BASHPID, CWD is $PWD)"
     fi
   fi
 }
 
-ble_trap_exit_top() {
+ble_trap_top_exit() {
   trap "rm \"\${_BLE_ALREADY}\" \"\${_BLE_DELAYED}\"" EXIT
 }
 
@@ -110,10 +127,10 @@ ble_check_cmd() {
 
 ble_run_script() {
   ble_print_start
-  _FINISHED=0
+  _BLE_FINISHED=0
   source "$1"
-  # unless it gets here, unhandled exit happened -> the exit handler will react on it because _FINISHED will be still set to 0
-  _FINISHED=1
+  # unless it gets here, unhandled exit happened -> the exit handler will react on it because _BLE_FINISHED will be still set to 0
+  _BLE_FINISHED=1
 }
 
 ble_handle_failure() {
@@ -136,14 +153,14 @@ ble_serialize_command() {
 ### CORE FUNCTIONS ###
 
 @() {
-  _SKIP=0
+  _BLE_SKIP=0
   ble_cd_basedir
   ble_print_block "$*"
 }
 
 -() {
   if test $# -eq 0; then
-    if ((_SKIP==0)); then
+    if ((_BLE_SKIP==0)); then
       print_info "loop"
       return 1
     else
@@ -151,16 +168,16 @@ ble_serialize_command() {
     fi
   fi
 
-  if ((_SKIP!=1)); then
+  if ((_BLE_SKIP!=1)); then
     ble_print_task "$*"
     ble_check_cmd "$1"
-    _WHEN_USED=0
+    _BLE_WHEN_USED=0
     local ex=0
     "$@" || ex=$?
-    if ((_WHEN_USED==1)); then    # when has been used
+    if ((_BLE_WHEN_USED==1)); then    # when has been used
       if ((ex!=0)); then
         print_info "skipping following tasks"
-        _SKIP=1        # set skip mode depending on the status
+        _BLE_SKIP=1        # set skip mode depending on the status
       fi
       return 0                    # and return 0
     else
@@ -184,9 +201,6 @@ absolute_path() {
 
 base_dir() {
   _BASE_DIR=`absolute_path "$1"`
-  if test ${#_BASE_DIR} -eq 0; then
-    fail "base_dir: absolute_path '$1' failed"
-  fi
   ble_cd_basedir
 }
 
@@ -291,7 +305,7 @@ output_to() {
 }
 
 orig_dir() {
-  echo $ORIG_DIR
+  echo "${_BLE_ORIG_DIR}"
 }
 
 print_error() {
@@ -311,7 +325,7 @@ quiet() {
 }
 
 reset_base_dir() {
-  base_dir "${_ORIG_BASE_DIR}"
+  base_dir "${_BLE_ORIG_BASE_DIR}"
 }
 
 result() {
@@ -319,13 +333,15 @@ result() {
   ble_check_cmd "$1"
   local ex=0
   "$@" || ex=$? # || bypasses pipefail
-  eval "$name() {
-    if test \$# -gt 0; then
-      test \"$ex\" \"\$@\"; # with arguments
-    else
-      return \"$ex\"
-    fi
-  }"
+  eval "
+    $name() {
+      if test \$# -gt 0; then
+        test \"$ex\" \"\$@\"; # with arguments - to test exitcode
+      else
+        return \"$ex\"        # without - to test boolean
+      fi
+    }
+  "
 }
 
 set_var() {
@@ -333,7 +349,7 @@ set_var() {
 }
 
 toplevel() {
-  ((_BLE_LEVEL==1))
+  ((_BLE_LEVEL==0))
 }
 
 var_empty() {
@@ -342,7 +358,7 @@ var_empty() {
 }
 
 when() {
-  _WHEN_USED=1
+  _BLE_WHEN_USED=1
   "$@" || return $? # || bypasses pipefail
 }
 
@@ -378,78 +394,47 @@ if test ${#1} -eq 0; then
   exit 1
 fi
 
-# variables inherited from the parent
-_BLE_LEVEL=${_BLE_LEVEL}     # magic :-)
-_BLE_NAV=${_BLE_NAV}
-_BLE_ALREADY=${_BLE_ALREADY}
-_BLE_DELAYED=${_BLE_DELAYED}
+# be strict
+set -eu -o pipefail
 
-# now we can set defaults to be strict & use a new process group
-set -eu -o pipefail -m
+# use a new process group
+set -m
 
-export _BLE=` absolute_path "$0" `  # the bashible script itself
-test ${#_BLE} -gt 0 || fail "can't get _BLE; is 'readlink' command present?"
-export _BLE_DIR=` dirname "${_BLE}" `  # bashible modules reside there
-test ${#_BLE_DIR} -gt 0     || fail "can't get _BLE_DIR; is 'dirname' command present?"
-test ` basename "${_BLE}" ` = bashible || fail "the 'basename' command is probably not present"
-_BLE_SUBSHELL_PID=0
-
-ble_set_variables "$1"
-ble_cd_basedir
+ble_set_top_variables "$0"
 ble_trap_termination
-ble_trap_exit_top
+ble_trap_top_exit
 
-if toplevel; then
+# the toplevel script will run on the background (signals will break the "wait", therefore the
+# top process can react immediately)
+(
+  # keep the same process group
+  set +m
 
-  # this is the top-level script
-
-  export _BLE_DELAYED=$(mktemp) # store commands run at the end
-  test ${#_BLE_DELAYED} || fail "_BLE_DELAYED tempfile can not be created, is the 'mktemp' command present?"
-  export _BLE_ALREADY=$(mktemp) # store already run commands
-  test ${#_BLE_ALREADY} || fail "_BLE_ALREADY tempfile can not be created, is the 'mktemp' command present?"
-
-  # this is the toplevel script
-  # will be run in on the background, because the top process must be able to catch TERM and react immediately
-  (
-    export _BLE_LEVEL
-    export _BLE_NAV
-
-    set +m # keep the same process group
-
-    ble_trap_termination
-    ble_trap_exit
-    ble_run_script "$@"
-    test $? -ne 0 && ble_exit $? # test must be split from the run_script to enable exit on pipefail
-
-    # run delayed commands
-    # (they will exit immediately on failure unless prefixed by "may_fail")
-    if test -s "${_BLE_DELAYED}"; then
-      export _BLE_NAV='DELAYED'
-      ble_print_start
-      IFS=$'\n'; while read line; do
-        readarray -d $'\t' -t ary <<< $line
-        cd "${ary[0]}"      # original CWD
-        ary=("${ary[@]:1}") # shift
-        - "${ary[@]}"       # run the command with arguments via '-'
-      done < "${_BLE_DELAYED}"
-      ble_print_finish
-    fi
-
-  ) &
-  _BLE_SUBSHELL_PID=$!
-  wait -n
-  _BLE_SUBSHELL_PID=0
-  ble_exit $?
-
-else
-
-  # this is a child script
-
-  set +m  # keep the same process group
+  ble_set_variables "$1"
 
   ble_trap_termination
   ble_trap_exit
-  ble_run_script "$@"
-  ble_exit $?
+  ble_cd_basedir
 
-fi
+  ble_run_script "$@"
+  test $? -ne 0 && ble_exit $? # do not use || on the line above, it would disable exit on pipefail
+
+  # run delayed commands
+  # (they will exit immediately on failure unless prefixed by "may_fail")
+  if test -s "${_BLE_DELAYED}"; then
+    export _BLE_NAV='DELAYED'
+    ble_print_start
+    IFS=$'\n'; while read line; do
+      readarray -d $'\t' -t ary <<< $line
+      cd "${ary[0]}"      # original CWD
+      ary=("${ary[@]:1}") # shift
+      - "${ary[@]}"       # run the command with arguments via '-'
+    done < "${_BLE_DELAYED}"
+    ble_print_finish
+  fi
+
+) &
+_BLE_SUBSHELL_PID=$!
+wait -n
+_BLE_SUBSHELL_PID=0
+ble_exit $?

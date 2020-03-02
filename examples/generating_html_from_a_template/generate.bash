@@ -6,4 +6,4 @@ use template
 FOO_OR_BAR=bar  #foo
 
 @ Building the HTML from a template
-- output_to index.html template index.tpl
+  - output_to index.html template index.tpl
