@@ -3,7 +3,7 @@
 Runs another bashible script using "source". Avoids multiple parsing of bashible itself.
 The sourced script runs in a new subprocess, therefore it won't affect the caller.
 
-Use "unless_already" to prevent multiple runs [unless_already](unless_already.md).
+Use [unless_already](unless_already.md) to prevent multiple runs.
 
 Use [delayed](delayed.md) to postpone run. Delayed tasks will run when the top-level script finishes.
 
