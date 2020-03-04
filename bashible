@@ -126,9 +126,10 @@ ble_check_cmd() {
 }
 
 ble_run_script() {
+  local path=$1; shift
   ble_print_start
   _BLE_FINISHED=0
-  source "$1"
+  source "$path"
   # unless it gets here, unhandled exit happened -> the exit handler will react on it because _BLE_FINISHED will be still set to 0
   _BLE_FINISHED=1
 }
@@ -345,7 +346,7 @@ result() {
 }
 
 set_var() {
-  eval "$1=\$2"
+  eval "$1=\$*"
 }
 
 toplevel() {
