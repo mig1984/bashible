@@ -56,7 +56,7 @@ ble_set_top_variables() {
   set -u
   export _BLE_LEVEL=0
   export _BLE_NAV=''
-  export _BLE_SUPRESS_ERRORS=0
+  export _BLE_SUPPRESS_ERRORS=0
   export _BLE=` absolute_path "$1" ` # the bashible script itself
   test ` basename "${_BLE}" ` = bashible || fail "the 'basename' command is probably not present"
   export _BLE_DELAYED=$(mktemp) # store commands run at the end
@@ -140,11 +140,11 @@ ble_handle_exitstatus() {
   local ex=$1; shift
   if ((ex==43)); then
     ble_exit 43  # 43 == halt
-  elif ((ex>0 && ex!=42 && _BLE_SUPRESS_ERRORS==0)); then
+  elif ((ex>0 && ex!=42 && _BLE_SUPPRESS_ERRORS==0)); then
     ble_print_fail "command '$@' failed with exit code $ex (CWD is $PWD)"
     return 42    # 42 == error handled from now on (no more error messages in parents)
   else
-    return $ex   # 0 or another status when errors output is supressed
+    return $ex   # 0 or another status when errors output is SUPPRESSed
   fi
 }
 
@@ -311,10 +311,10 @@ halt() {
 # but still fails if the command does not exist
 may_fail() {
   ble_check_cmd "$1"
-  local old=${_BLE_SUPRESS_ERRORS}
-  export _BLE_SUPRESS_ERRORS=1
+  local old=${_BLE_SUPPRESS_ERRORS}
+  export _BLE_SUPPRESS_ERRORS=1
   "$@" || ble_handle_exitstatus $? "$@" || true
-  export _BLE_SUPRESS_ERRORS=$old
+  export _BLE_SUPPRESS_ERRORS=$old
 }
 
 not() {
@@ -371,11 +371,11 @@ reset_base_dir() {
 result() {
   local name=$1; shift
   ble_check_cmd "$1"
-  local old=${_BLE_SUPRESS_ERRORS}
-  export _BLE_SUPRESS_ERRORS=1
+  local old=${_BLE_SUPPRESS_ERRORS}
+  export _BLE_SUPPRESS_ERRORS=1
   local ex=0
   "$@" || ble_handle_exitstatus $? "$@" || ex=$?
-  export _BLE_SUPRESS_ERRORS=$old
+  export _BLE_SUPPRESS_ERRORS=$old
   eval "
     $name() {
       if test \$# -gt 0; then
