@@ -1,8 +1,8 @@
 ##### output_to DEST COMMAND [ARGS]
 
-Runs a command and stores it's output to a file. It prevents deleting existing contents of the file on failure.
+Runs a command and stores it's output to a file. It keeps the original content of the file if the command fails.
 
-Internally writes output to DEST.tmp using the "tee" command (you see the output printed as well). Then moves the temp file over DEST on success, otherwise removes it.
+Internally it writes the output to DEST.tmp using the "tee" command (you see the output printed as well). Then moves the DEST.tmp over DEST on success, otherwise removes it.
 
 ```bash
 @ Storing list of files
@@ -11,3 +11,7 @@ Internally writes output to DEST.tmp using the "tee" command (you see the output
 @ Generating a mysql.cnf from a template
   - output_to /etc/mysql.cnf template mysql.template
 ```
+
+##### See also
+
+[always_output_to](always_output_to.md)  

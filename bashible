@@ -16,9 +16,9 @@ ble_help() {
   echo "see also: https://github.com/mig1984/bashible"
   echo
   echo "special exitcodes:"
-  echo "  42   already handled failure (supress further error output in parental scripts)"
-  echo "  43   means halt (it stops execution also in parental scripts)"
-  echo "  143  when terminated by TERM, QUIT, INT or HUP"
+  echo "  42   already handled failure"
+  echo "  43   halt"
+  echo "  143  terminated by TERM, QUIT, INT or HUP"
   echo
 }
 
@@ -56,6 +56,7 @@ ble_set_top_variables() {
   set -u
   export _BLE_LEVEL=0
   export _BLE_NAV=''
+  export _BLE_SUPRESS_ERRORS=0
   export _BLE=` absolute_path "$1" ` # the bashible script itself
   test ` basename "${_BLE}" ` = bashible || fail "the 'basename' command is probably not present"
   export _BLE_DELAYED=$(mktemp) # store commands run at the end
@@ -67,7 +68,7 @@ ble_set_top_variables() {
 
 ble_set_variables() {
   _BLE_ORIG_DIR=` pwd `
-  _BLE_DIR=` absolute_path "${_BLE}" `  # bashible modules reside there
+  _BLE_DIR=` absolute_path $( dirname "${_BLE}" ) `  # bashible modules reside there
   _BLE_SCRIPT_PATH=`absolute_path "$1"`
   base_dir "`dirname "${_BLE_SCRIPT_PATH}"`"
   _BLE_ORIG_BASE_DIR=${_BASE_DIR}
@@ -79,7 +80,7 @@ ble_set_variables() {
   fi
   _BLE_SKIP=0                      # skipping mode? will be reset on a next block
   _BLE_WHEN_USED=0                 # "-" will set skipping mode depending on the final result
-  _BLE_FINISHED=0                  # to detect unhandled exits (pipefail)
+  _BLE_FINISHED=0                  # to detect unhandled exits (pipefail, errexit)
   export _BLE_NAV
   export _BLE_LEVEL
 }
@@ -95,6 +96,7 @@ ble_do_finish() {
   else
     if ((_BLE_FINISHED==0 && $1!=42)); then
       ble_print_fail "Unhandled failure, exit code $1 (PID=$BASHPID, CWD is $PWD)"
+      exit 42 # convert to handled
     fi
   fi
 }
@@ -134,14 +136,15 @@ ble_run_script() {
   _BLE_FINISHED=1
 }
 
-ble_handle_failure() {
+ble_handle_exitstatus() {
  local ex=$1; shift
- if ((ex>0)); then
-   if ((ex!=42 && ex!=43)); then
-     fail "command '$@' failed with exit code $ex (CWD is $PWD)"
-   else
-     ble_exit $ex
-   fi
+ if ((ex==43)); then
+   ble_exit 43  # 43 == halt
+ elif ((ex>0 && ex!=42 && _BLE_SUPRESS_ERRORS==0)); then
+   ble_print_fail "command '$@' failed with exit code $ex (CWD is $PWD)"
+   return 42    # 42 == error handled from now on (no more error messages in parents)
+ else
+   return $ex   # 0 or another status when errors output is supressed
  fi
 }
 
@@ -175,14 +178,18 @@ ble_serialize_command() {
     _BLE_WHEN_USED=0
     local ex=0
     "$@" || ex=$?
-    if ((_BLE_WHEN_USED==1)); then    # when has been used
-      if ((ex!=0)); then
+    if ((_BLE_WHEN_USED==1)); then
+      # 'when' has been used
+      # => set skip mode if the command passed
+      # always return 0 (the command may fail)
+      if ((ex!=0)); then   
         print_info "skipping following tasks"
-        _BLE_SKIP=1        # set skip mode depending on the status
+        _BLE_SKIP=1
       fi
-      return 0                    # and return 0
+      return 0
     else
-      ble_handle_failure $ex "$@"
+      # explicitly do exit, do not rely on set -e which is disabled in subshells (via 'run')
+      ble_handle_exitstatus $ex "$@" || ble_exit $?  
     fi
   fi
 }
@@ -200,6 +207,16 @@ absolute_path() {
   echo "$path"
 }
 
+always_output_to() {
+  local dest=$1; shift
+  test "${#dest}" -gt 0 || fail "always_output_to: no destination file specified"
+  ble_check_cmd "$1"
+  local ex=0
+  "$@" | tee $dest.tmp || ex=$?
+  mv "$dest.tmp" "$dest"
+  ble_handle_exitstatus $ex "$@"
+}
+
 base_dir() {
   _BASE_DIR=`absolute_path "$1"`
   ble_cd_basedir
@@ -210,15 +227,17 @@ run() {
      ble_set_variables "$1"
      ble_trap_termination
      ble_trap_exit
+     # FIXME: there's no way to re-enable "set -e" which does not work in the subshell
+     # => therefore "-" does exit explicitly and does not rely on the errexit
      set -eu -o pipefail +m
      ble_run_script "$@"
   )
   local ex=$?
-  if ((ex>0)); then
-    return $ex
-  else
+  if ((ex==0)); then
     test ${#_BLE_NAV} -gt 0 && ble_print_continues
     return 0
+  else
+    ble_handle_exitstatus $ex "$@"
   fi
 }
 
@@ -228,20 +247,26 @@ delayed() {
 
 dir_empty() {
   local buf
-  buf=` ls -A $1 | wc -l ` || ble_handle_failure $? "$@"
-  ((buf>0))
+  if buf=` ls -A $1 | wc -l `; then
+    ((buf>0))
+  else
+    ble_handle_exitstatus $? "$@"
+  fi
 }
 
 empty() {
   ble_check_cmd "$1"
   local buf
-  buf=` "$@" || return $? ` || ble_handle_failure $? "$@"
-  echo "$buf"
-  test ${#buf} -eq 0
+  if buf=` "$@" `; then
+    echo "$buf"
+    test ${#buf} -eq
+  else
+    ble_handle_exitstatus $? "$@"
+  fi
 }
 
 evaluate() {
-  eval "$@" || return $? # || bypasses pipefail
+  eval "$@" || return $? # || bypasses errexit
 }
 
 fail() {
@@ -266,9 +291,12 @@ fill_var() {
   local var=$1; shift
   ble_check_cmd "$1"
   local buf
-  buf=` "$@" || return $? ` || ble_handle_failure $? "$@"
-  print_info "$var=$buf"
-  eval "$var=\$buf"
+  if buf=` "$@" `; then
+    print_info "$var=$buf"
+    eval "$var=\$buf"
+  else
+    ble_handle_exitstatus $? "$@"
+  fi
 }
 
 halt() {
@@ -280,30 +308,41 @@ halt() {
   ble_exit 43
 }
 
+# but still fails if the command does not exist
 may_fail() {
-  # but still exit if the command does not exist
   ble_check_cmd "$1"
-  "$@" || return 0
+  local old=${_BLE_SUPRESS_ERRORS}
+  export _BLE_SUPRESS_ERRORS=1
+  "$@" || ble_handle_exitstatus $? "$@" || true
+  export _BLE_SUPRESS_ERRORS=$old
 }
 
 not() {
   ble_check_cmd "$1"
-  "$@" && return 1 || return 0
+  if ! "$@"; then
+    local ex=$?
+    if ((ex==42 || ex==43)); then
+      return $ex
+    fi
+    return 0
+  else
+    return 1
+  fi
 }
 
 output_to() {
   local dest=$1; shift
   test "${#dest}" -gt 0 || fail "output_to: no destination file specified"
   ble_check_cmd "$1"
-  local ex=0
-  "$@" | tee $dest.tmp || ex=$? # || bypasses pipefail
-  if test $ex -eq 0; then
+  if "$@" | tee $dest.tmp; then
     mv "$dest.tmp" "$dest"
   else
+    local ex=$?
     rm "$dest.tmp" 2>/dev/null
-    ble_handle_failure $ex "$@"
+    ble_handle_exitstatus $ex "$@"
   fi
 }
+
 
 orig_dir() {
   cd "${_BLE_ORIG_DIR}"
@@ -332,8 +371,11 @@ reset_base_dir() {
 result() {
   local name=$1; shift
   ble_check_cmd "$1"
+  local old=${_BLE_SUPRESS_ERRORS}
+  export _BLE_SUPRESS_ERRORS=1
   local ex=0
-  "$@" || ex=$? # || bypasses pipefail
+  "$@" || ble_handle_exitstatus $? "$@" || ex=$?
+  export _BLE_SUPRESS_ERRORS=$old
   eval "
     $name() {
       if test \$# -gt 0; then
@@ -343,6 +385,7 @@ result() {
       fi
     }
   "
+  return 0
 }
 
 set_var() {
@@ -360,7 +403,7 @@ var_empty() {
 
 when() {
   _BLE_WHEN_USED=1
-  "$@" || return $? # || bypasses pipefail
+  "$@" || return $? # || bypasses errexit
 }
 
 unless_already() {
@@ -369,7 +412,9 @@ unless_already() {
   local scmd=`ble_serialize_command "$path" "$@"`
   if ! grep -q "$scmd" < ${_BLE_ALREADY}; then
     echo "$scmd" >> "${_BLE_ALREADY}" || fail "can't write to _BLE_ALREADY file (${_BLE_ALREADY})"
-    "$path" "$@" || return $?
+    if ! "$path" "$@"; then
+      ble_handle_exitstatus $? "$@"
+    fi
   fi
 }
 
@@ -417,7 +462,7 @@ ble_trap_top_exit
   ble_cd_basedir
 
   ble_run_script "$@"
-  test $? -ne 0 && ble_exit $? # do not use || on the line above, it would disable exit on pipefail
+  test $? -ne 0 && ble_exit $? # do not use || on the line above, it would disable errexit (still it works well only in the top script)
 
   # run delayed commands
   # (they will exit immediately on failure unless prefixed by "may_fail")

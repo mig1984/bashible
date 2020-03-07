@@ -4,8 +4,8 @@ Stores result of the executed command. The command may fail.
 
 Internally creates a new function which returns the stored exit status. This function is to be used with [when](when.md) .
 
-WARNING: use result as the first function in the chain. Some functions, like [output_to](output_to.md), start another process to grab it's output.
-That means that the resulting function won't be propagated back to the parent.
+WARNING: use the result as the first function in the chain. Some functions, like [output_to](output_to.md), start another process to grab output of their commands.
+That means, the resulting function would not be propagated back to the parent.
 
 ```bash
 @ Try to synchronize files

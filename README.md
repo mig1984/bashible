@@ -110,6 +110,7 @@ run it
 [@ MESSAGE](docs/@.md)  
 [- COMMAND ARGS ...](docs/-.md)  
 [absolute_path PATH](docs/absolute_path.md)  
+[always_output_to DEST COMMAND ARGS ...](docs/always_output_to.md)  
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  
 [delayed COMMAND ARGS ...](docs/delayed.md)  
