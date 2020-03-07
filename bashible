@@ -137,15 +137,15 @@ ble_run_script() {
 }
 
 ble_handle_exitstatus() {
- local ex=$1; shift
- if ((ex==43)); then
-   ble_exit 43  # 43 == halt
- elif ((ex>0 && ex!=42 && _BLE_SUPRESS_ERRORS==0)); then
-   ble_print_fail "command '$@' failed with exit code $ex (CWD is $PWD)"
-   return 42    # 42 == error handled from now on (no more error messages in parents)
- else
-   return $ex   # 0 or another status when errors output is supressed
- fi
+  local ex=$1; shift
+  if ((ex==43)); then
+    ble_exit 43  # 43 == halt
+  elif ((ex>0 && ex!=42 && _BLE_SUPRESS_ERRORS==0)); then
+    ble_print_fail "command '$@' failed with exit code $ex (CWD is $PWD)"
+    return 42    # 42 == error handled from now on (no more error messages in parents)
+  else
+    return $ex   # 0 or another status when errors output is supressed
+  fi
 }
 
 ble_serialize_command() {
