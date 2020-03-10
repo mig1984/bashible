@@ -165,7 +165,7 @@ ble_serialize_command() {
 -() {
   if test $# -eq 0; then
     if ((_BLE_SKIP==0)); then
-      print_info "loop"
+      print_info "-|| in action"  # -|| for, -|| while, -|| continue, etc. => does the loop/continue unless skip mode is active
       return 1
     else
       return 0
@@ -259,7 +259,7 @@ empty() {
   local buf
   if buf=` "$@" `; then
     echo "$buf"
-    test ${#buf} -eq
+    test ${#buf} -eq 0
   else
     ble_handle_exitstatus $? "$@"
   fi
