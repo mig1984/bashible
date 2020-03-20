@@ -461,7 +461,9 @@ ble_trap_top_exit
   ble_trap_exit
   ble_cd_basedir
 
-  ble_run_script "$@"
+  shift
+  ble_run_script "${_BLE_SCRIPT_PATH}" "$@"
+
   test $? -ne 0 && ble_exit $? # do not use || on the line above, it would disable errexit (still it works well only in the top script)
 
   # run delayed commands
