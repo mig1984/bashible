@@ -78,11 +78,11 @@ Install bashible and it's modules (sourceable functions - here just one module, 
 
 ```bash
 wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible
-wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible.edit
+wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible.edit.bash
 chmod 755 bashible
-chmod 755 bashible.edit
+chmod 755 bashible.edit.bash
 mv bashible /usr/local/bin
-mv bashible.edit /usr/local/bin
+mv bashible.edit.bash /usr/local/bin
 ```
 
 Run the script
