@@ -389,7 +389,9 @@ result() {
 }
 
 set_var() {
-  eval "$1=\$*"
+  var=$1
+  shift
+  eval "$var=\$*"
 }
 
 toplevel() {
