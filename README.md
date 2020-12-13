@@ -151,6 +151,7 @@ run it
 [and when](docs/and_when.md)  
 [or when](docs/or_when.md)  
 [- COMMAND ARGS ...](docs/-.md)  
+[- VARIABLE = VALUE](docs/-.md)  
 [absolute_path PATH](docs/absolute_path.md)  
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  
