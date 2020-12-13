@@ -6,7 +6,7 @@ Example:
 
 ```bash
 
- - fill_var path absolute_path ./this_file.txt
+ - output_to_var path absolute_path ./this_file.txt
  - echo $path  # /foo/bar/baz/this_file.txt
 
 ```

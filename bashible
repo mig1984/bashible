@@ -260,25 +260,6 @@ delayed() {
   ble_serialize_command "$@" >> "${_BLE_DELAYED}" || fail "can't write to _BLE_DELAYED file (${_BLE_DELAYED})"
 }
 
-dir_empty() {
-  local buf
-  if buf=` ls -A $1 | wc -l `; then
-    ((buf>0))
-  else
-    ble_handle_exitstatus $? "$@"
-  fi
-}
-
-empty() {
-  ble_check_cmd "$1"
-  local buf
-  if buf=` "$@" `; then
-    echo "$buf"
-    test ${#buf} -eq 0
-  else
-    ble_handle_exitstatus $? "$@"
-  fi
-}
 
 evaluate() {
   eval "$@" || return $? # || bypasses errexit
@@ -323,6 +304,26 @@ ignore_errors() {
 
 is_toplevel() {
   ((_BLE_LEVEL==0))
+}
+
+is_empty_dir() {
+  local buf
+  if buf=` ls -A $1 | wc -l `; then
+    ((buf>0))
+  else
+    ble_handle_exitstatus $? "$@"
+  fi
+}
+
+is_empty_output() {
+  ble_check_cmd "$1"
+  local buf
+  if buf=` "$@" `; then
+    echo "$buf"
+    test ${#buf} -eq 0
+  else
+    ble_handle_exitstatus $? "$@"
+  fi
 }
 
 is_empty_var() {

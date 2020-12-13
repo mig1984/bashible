@@ -19,12 +19,12 @@ the webserver reload in the create-virtual-host.ble script).
   - delayed unless_already ./reload-nginx.ble
 
 @ Cleanup at the end
-  - delayed unless_already may_fail ./cleanup.ble
+  - delayed unless_already ignore_errors ./cleanup.ble
 
 ```
 
 ##### See also
 
 [run](run.md)  
-[may_fail](may_fail.md)  
+[ignore_errors](ignore_errors.md)  
 [unless_already](unless_already.md)  

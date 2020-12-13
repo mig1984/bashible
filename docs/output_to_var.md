@@ -25,10 +25,10 @@ You can use this to store and check presence of an argument
 ```bash
 
 @ Setting some variables
-  - output_to_var arg1 not empty echo $1
+  - output_to_var arg1 not is_empty_output echo $1
 ```
 
 ##### See also
 
 [output_to_file](output_to_file)  
-[empty](empty.md)  
+[is_empty_output](is_empty_output.md)  

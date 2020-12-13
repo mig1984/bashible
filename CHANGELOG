@@ -76,6 +76,8 @@
       may_fail  => ignore_errors
       toplevel  => is_toplevel
       var_empty => is_empty_var
+      empty     => is_empty_output
+      dir_empty => is_empty_dir
 
   - shopt -s inherit_errexit by default
 

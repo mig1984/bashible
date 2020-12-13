@@ -11,5 +11,5 @@ It will always fail when the specified module can not be loaded.
 use template
 
 @ Generating my.cnf
-  - output_to /etc/my.cnf template my.cnf.tpl
+  - output_to_file /etc/my.cnf template my.cnf.tpl
 ```

@@ -7,8 +7,8 @@ All possible parent (caller) scripts will stop immediately as well.
 It will exit with exitcode 43.
 
 ```bash
+@ when not test -d /tmp
 @ Basic checks
- - when not test -d /tmp
  - halt "there is no /tmp dir"
 
 ```
@@ -17,5 +17,4 @@ It will exit with exitcode 43.
 
 [fail](fail.md)  
 [finish](finish.md)  
-[skip](skip.md)  
 [when](when.md)  

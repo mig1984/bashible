@@ -76,8 +76,8 @@ fi
 #!/usr/local/bin/bashible
 
 @ Loading lists
-  - output_to_var HOMES not empty ls -1 /home
-  - output_to_var VHOSTS not empty ls -1 /etc/nginx/vhosts.d
+  - output_to_var HOMES not is_empty_output ls -1 /home
+  - output_to_var VHOSTS not is_empty_output ls -1 /etc/nginx/vhosts.d
 
 @ Rsyncing data and saving error messages into a file
   - quiet output_to_file errlog.txt -2 rsync /foo /bar
@@ -128,16 +128,16 @@ run it
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  
 [delayed COMMAND ARGS ...](docs/delayed.md)  
-[dir_empty PATH](docs/dir_empty.md)  
-[empty COMMAND ARGS ...](docs/empty.md)  
 [evaluate STRING](docs/evaluate.md)  
 [fail MESSAGE](docs/fail.md)  
 [finish MESSAGE](docs/finish.md)  
 [halt MESSAGE](docs/halt.md)  
 [not COMMAND ARGS ...](docs/not.md)  
 [ignore_errors COMMAND ARGS ...](docs/ignore_errors.md)  
-[is_toplevel](docs/toplevel.md)  
-[is_var_empty VAR](docs/is_var_empty.md)  
+[is_toplevel](docs/is_toplevel.md)  
+[is_empty_dir PATH](docs/is_empty_dir.md)  
+[is_empty_output COMMAND ARGS ...](docs/is_empty_output.md)  
+[is_empty_var VAR](docs/is_empty_var.md)  
 [output_to_file DEST OPTS COMMAND ARGS ...](docs/output_to_file.md)  
 [output_to_var NAME OPTS COMMAND ARGS ...](docs/output_to_var.md)  
 [orig_dir](docs/orig_dir.md)  

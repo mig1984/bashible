@@ -28,7 +28,7 @@ KEY_BUFFER_SIZE=1G
 SORT_BUFFER_SIZE=128M
 
 @ Creating mysql.conf
-  - output_to /etc/mysql/mysql.conf template mysql.conf.tpl
+  - output_to_file /etc/mysql/mysql.conf template mysql.conf.tpl
 ```
 
 All variables must be set, otherwise the `template` function exits 1.

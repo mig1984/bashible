@@ -1,4 +1,4 @@
-#### dir_empty PATH
+#### is_empty_dir PATH
 
 Succeeds if the specified directory is empty. Fails otherwise.
 
@@ -9,6 +9,6 @@ Example:
 ```bash
 
 @ Checking if foo is mounted
-  - not dir_empty /mnt/foo
+  - not is_empty_dir /mnt/foo
 
 ```

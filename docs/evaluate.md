@@ -6,10 +6,11 @@ In the following example, users starting with the letter "g" will be loaded into
 
 ```bash
 @ Loading some variables
-  - fill_var USERS not empty evaluate 'cat /etc/passwd | egrep -e ^g'
+  - output_to_var USERS not is_empty_output evaluate 'cat /etc/passwd | egrep -e ^g'
   - echo $USERS  # now you can be sure there is something
 ```
 
 ##### See also
 
-[fill_var](fill_var.md)  
+[output_to_var](output_to_var.md)  
+[is_empty_output](is_empty_output.md)  
