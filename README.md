@@ -40,12 +40,12 @@ Suggestions and bugfixes are welcome! :-)
   - result synced rsync -av /foo /bar
 
 @ when synced
-@ when test -f /etc/do-shutdown
-@ Shutting down the machine
+@ and test -f /etc/do-shutdown
+@ Shutting down the machine after successful synchronization
   - shutdown -h now
 
 @ when not synced
-@ Sending an e-mail unless synchronization succeeded
+@ Error happened, sending an e-mail
   - mail me@me.com <<< "synchronzation failed"
 ```
 
@@ -76,13 +76,35 @@ fi
 #!/usr/local/bin/bashible
 
 @ Loading lists
-  - output_to_var HOMES not is_empty_output ls -1 /home
-  - output_to_var VHOSTS not is_empty_output ls -1 /etc/nginx/vhosts.d
+  - output_to_var HOMES is not empty_output ls -1 /home
+  - output_to_var VHOSTS is not empty_output ls -1 /etc/nginx/vhosts.d
 
 @ Rsyncing data and saving error messages into a file
   - quiet output_to_file errlog.txt -2 rsync /foo /bar
 ```
 
+## Another example
+
+```bash
+#!/usr/local/bin/bashible
+
+use template
+
+@ Doing some checks and setting variables
+  - output_to_var HOST is not empty_output echo $1
+  - output_to_var PORT is not empty_output echo $2
+  - is not empty_var HOME
+  - is empty_dir /home/$HOME
+
+@ Copying default files
+  - cp -av /mnt/defaults /home/$HOME
+
+@ Creating .bashrc from a template
+  # the template needs two variables to be set, HOST and PORT
+  # these are set by arguments of this script ($1 and $2)
+  - output_to_file /home/$HOME/.bashrc.tmp template /mnt/templates/bashrc.tpl
+  - mv /home/$HOME/.bashrc.tmp /home/$HOME/.bashrc
+```
 
 See also examples in the example directory.
 

@@ -4,8 +4,8 @@ Runs the command and returns true if it's output is empty. Combine it with "not"
 
 ```bash
 @ Setting some variables and checking whether they contain something
-  - output_to_var DOMAIN not is_empty_output cat /etc/myapp/domain.txt
-  - output_to_var FOO not is_empty_output echo $BAR
+  - output_to_var DOMAIN is not empty_output cat /etc/myapp/domain.txt
+  - output_to_var FOO is not empty_output echo $BAR
 ```
 
 ##### See also

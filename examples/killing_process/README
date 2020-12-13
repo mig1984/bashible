@@ -1,3 +1,5 @@
+expects bashible to be installed in /usr/local/bin (including it's modules)
+
 This example demonstrates killing parent process which will kill it's children. In pure bash, children processes stay alive unless you run the script in interactive mode.
 
 usage:

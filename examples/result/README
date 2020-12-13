@@ -1,7 +1,6 @@
 expects bashible to be installed in /usr/local/bin (including it's modules)
 
-then run
+usage:
 
-$ bashible generate.ble
+bashible ./result.ble
 
-it will create index.html from a template.

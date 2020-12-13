@@ -3,9 +3,10 @@
 use template
 
 @ Setting up and checking variables needed by a template
-  - output_to_var PORT not is_empty_output echo $1
-  - output_to_var LISTEN not is_empty_output echo $2
+  - output_to_var PORT is not empty_output echo $1
+  - output_to_var LISTEN is not empty_output echo $2
 
 @ when not test -f sshd_config
 @ Generating sshd_config from a template unless already
-  - output_to_file sshd_config template sshd_config.tpl
+  - output_to_file sshd_config.tmp template sshd_config.tpl
+  - mv sshd_config.tmp sshd_config # on success

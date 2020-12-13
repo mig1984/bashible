@@ -41,9 +41,9 @@ Moreover you can use commands in templates the same way as in bashible scripts
 ```
 ...
 ## Buffer settings
-key-buffer-size = $( - not empty cat /settings/key-buffer-size.txt )
+key-buffer-size = $( - is not empty_output cat /settings/key-buffer-size.txt )
 read-buffer-size = 2M
-sort-buffer-size = $( - not empty cat /settings/sort-buffer-size.txt )
+sort-buffer-size = $( - is not empty_output cat /settings/sort-buffer-size.txt )
 max-join-size = 512M
 max-heap-table-size = 128M
 ...

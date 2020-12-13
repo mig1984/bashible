@@ -9,6 +9,6 @@ Example:
 ```bash
 
 @ Checking if foo is mounted
-  - not is_empty_dir /mnt/foo
+  - is not empty_dir /mnt/foo
 
 ```

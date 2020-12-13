@@ -2,9 +2,17 @@ expects bashible to be installed in /usr/local/bin (including it's modules)
 
 then run
 
+$ bashible generate_sshd_config.ble 443 127.0.0.1
+
+it will create 'sshd_config'
+
+then run
+
 $ bashible ./add.ble
 
 or
 
 $ bashible ./del.ble
+
+to change some lines in the config
 

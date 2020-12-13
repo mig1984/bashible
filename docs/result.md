@@ -27,7 +27,7 @@ It's possible to combine multiple checks into one result. Functions "true" and "
 result webserver_is_installed false
 
 @ when which nginx             # is nginx there?
-@ when which php               # is php there?
+@ and which php                # is php there?
 @ Web stack is installed
   - result webserver_is_installed true
 ```
@@ -48,8 +48,13 @@ The newly created function accepts also arguments. You can check for a specific 
 @ The exitcode was 2
 
 @ when stored_res -gt 5
-@ when stored_res -le 50
+@ and stored_res -le 50
 @ The exitcode was greater than 5 and lower or equal 50
+
+@ when stored_res -eq 4
+@ or stored_res -eq 7
+@ or stored_res -eq 10
+@ The exitcode is either 4, 7 or 10
 ```
 
 ##### See also

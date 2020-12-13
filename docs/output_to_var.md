@@ -25,7 +25,7 @@ You can use this to store and check presence of an argument
 ```bash
 
 @ Setting some variables
-  - output_to_var arg1 not is_empty_output echo $1
+  - output_to_var arg1 is not empty_output echo $1
 ```
 
 ##### See also
