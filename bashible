@@ -519,6 +519,7 @@ result() {
   return 0
 }
 
+
 unless_already() {
   local cmd=$1; shift
   local path=`absolute_path "$cmd"`
@@ -540,14 +541,19 @@ use() {
 ### SUGAR ###
 
 # when not is_empty_dir
-# => when is not empty_dir
+# when is not empty_dir
+
+# result installed which nginx
+# register exitcode as 'installed' of which nginx
 
 is() { "$@"; }
+of() { "$@"; }
+as() { "$@"; }
+register() { test "$1" = 'exitcode' && shift; test "$1" = 'as' && shift; result "$@"; }
 empty_dir() { is_empty_dir "$@";}
 empty_var() { is_empty_var "$@";}
 empty_file() { is_empty_file "$@";}
-empty_output() { is_empty_output "$@";}
-
+empty_output() { test "$1" = 'of' && shift; is_empty_output "$@";}
 
 ################
 #### START #####

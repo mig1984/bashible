@@ -37,7 +37,7 @@ Suggestions and bugfixes are welcome! :-)
 # all tasks will stop execution immediately on failure, unless prefixed by "may_fail"
 
 @ Synchronizing files
-  - result synced rsync -av /foo /bar
+  - register exitcode as 'synced' of rsync -av /foo /bar
 
 @ when synced
 @ and test -f /etc/do-shutdown
@@ -76,8 +76,8 @@ fi
 #!/usr/local/bin/bashible
 
 @ Loading lists
-  - output_to_var HOMES is not empty_output ls -1 /home
-  - output_to_var VHOSTS is not empty_output ls -1 /etc/nginx/vhosts.d
+  - output_to_var HOMES is not empty_output of ls -1 /home
+  - output_to_var VHOSTS is not empty_output of ls -1 /etc/nginx/vhosts.d
 
 @ Rsyncing data and saving error messages into a file
   - quiet output_to_file errlog.txt -2 rsync /foo /bar
@@ -91,8 +91,8 @@ fi
 use template
 
 @ Doing some checks and setting variables
-  - output_to_var HOST is not empty_output echo $1
-  - output_to_var PORT is not empty_output echo $2
+  - output_to_var HOST is not empty_output of echo $1
+  - output_to_var PORT is not empty_output of echo $2
   - is not empty_var HOME
   - is empty_dir /home/$HOME
 
@@ -175,8 +175,24 @@ run it
 
 ### sugar
 
-Instead of 'when not is_empty_dir /home' you can write 'when is not empty_dir /home'.
-Similarly empty_output and empty_var.
+Instead of 
+
+'when not is_empty_dir /home' 
+
+you can write
+
+'when is not empty_dir /home'
+
+(similarly empty_output and empty_var)
+
+
+There are some words which does nothing, like 'is', 'of' or 'register'.
+
+'result synced rsync /foo /bar'
+
+is better readable as
+
+'register result synced of rsync /foo /bar'
 
 ### file-editing functions - found in bashible.edit module
 
