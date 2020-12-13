@@ -30,11 +30,10 @@ Suggestions and bugfixes are welcome! :-)
 
 `@` represents a block of tasks, `-` represents a task. Both `@` and `-` are just bash functions with arguments.
 
+The working directory is automatically set to the script's. All tasks will stop execution immediately on failure, unless prefixed by "ignore_errors".
+
 ```bash
 #!/usr/local/bin/bashible
-
-# the working directory is automatically set to the script's
-# all tasks will stop execution immediately on failure, unless prefixed by "may_fail"
 
 @ Synchronizing files
   - register exitcode as 'synced' of rsync -av /foo /bar
@@ -59,12 +58,12 @@ set -eux -o pipefail
 
 echo Synchronizing files
 if rsync -av /foo /bar; then
-  echo Shutting down the machine
+  echo Shutting down the machine after successful synchronization
   if test -f /etc/do-shutdown; then
     shutdown -h now
   fi
 else
-  echo Sending an e-mail unless synchronization succeeded
+  echo Error happened, sending an e-mail
   mail me@me.com <<< "synchronzation failed"
 fi
 ```
