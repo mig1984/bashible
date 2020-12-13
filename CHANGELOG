@@ -1,3 +1,6 @@
+0.2.1
+  - bashible.edit.ble module fixed (pull request "use whole line matching for add_line")
+
 0.2.0
   - system of conditions has changed
 
