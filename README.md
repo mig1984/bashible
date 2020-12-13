@@ -152,6 +152,7 @@ run it
 [or when](docs/or_when.md)  
 [- COMMAND ARGS ...](docs/dash1.md)  
 [- VARIABLE = VALUE](docs/dash2.md)  
+[- && (conditional loop)](docs/dash3.md)  
 [absolute_path PATH](docs/absolute_path.md)  
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  

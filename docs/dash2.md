@@ -18,6 +18,7 @@ echo $present  # => 1
 ##### See also
 
 [- COMMAND](dash1.md)  
+[- && (conditional loop)](dash3.md)  
 [and_when](and_when.md)  
 [or_when](or_when.md)  
 [@](@.md)  

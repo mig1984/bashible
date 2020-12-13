@@ -35,6 +35,7 @@ output_to_var DBS cat databases_to_install.txt
 ##### See also
 
 [- VARIABLE = VALUE](dash2.md)  
+[- && (conditional loop)](dash3.md)  
 [and_when](and_when.md)  
 [or_when](or_when.md)  
 [@](@.md)  
