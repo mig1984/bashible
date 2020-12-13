@@ -1,0 +1,6 @@
+@ I am a second child process doing the loop. Try to kill the topmost parent, it will terminate me as well.
+
+while true; do
+ echo "x"
+ sleep 1
+done

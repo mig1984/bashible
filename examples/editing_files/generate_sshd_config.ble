@@ -1,0 +1,11 @@
+#!/usr/local/bin/bashible
+
+use template
+
+@ Setting up and checking variables needed by a template
+  - output_to_var PORT not empty echo $1
+  - output_to_var LISTEN not empty echo $2
+
+@ when not test -f sshd_config
+@ Generating sshd_config from a template unless already
+  - output_to_file sshd_config template sshd_config.tpl

@@ -1,0 +1,29 @@
+#!/usr/local/bin/bashible
+
+@ This will exit with exitcode 45
+ - result stored_res bash -c "exit 45"
+
+@ when stored_res == 0
+@ The exitcode was zero
+#  - cmd1
+#  - cmd2
+#  ...
+
+@ when stored_res == 1
+@ The exitcode was 1
+#  - cmd1
+#  - cmd2
+#  ...
+
+@ when stored_res == 2
+@ The exitcode was 2
+#  - cmd1
+#  - cmd2
+#  ...
+
+@ when stored_res -gt 5
+@ when stored_res -le 50
+@ The exitcode was greater than 5 and lower or equal 50
+#  - cmd1
+#  - cmd2
+#  ...

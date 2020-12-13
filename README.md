@@ -26,7 +26,7 @@ Suggestions and bugfixes are welcome! :-)
 ![Example output](bashible.png)
 
 
-## Example script.bash
+## Example script.ble
 
 `@` represents a block of tasks, `-` represents a task. Both `@` and `-` are just bash functions with arguments.
 
@@ -39,13 +39,13 @@ Suggestions and bugfixes are welcome! :-)
 @ Synchronizing files
   - result synced rsync -av /foo /bar
 
+@ when synced
+@ when test -f /etc/do-shutdown
 @ Shutting down the machine
-  - when synced
-  - when test -f /etc/do-shutdown
   - shutdown -h now
 
+@ when not synced
 @ Sending an e-mail unless synchronization succeeded
-  - when not synced
   - mail me@me.com <<< "synchronzation failed"
 ```
 
@@ -69,6 +69,21 @@ else
 fi
 ```
 
+
+## Another example
+
+```bash
+#!/usr/local/bin/bashible
+
+@ Loading lists
+  - output_to_var HOMES not empty ls -1 /home
+  - output_to_var VHOSTS not empty ls -1 /etc/nginx/vhosts.d
+
+@ Rsyncing data and saving error messages into a file
+  - quiet output_to_file errlog.txt -2 rsync /foo /bar
+```
+
+
 See also examples in the example directory.
 
 
@@ -78,17 +93,17 @@ Install bashible and it's modules (sourceable functions - here just one module, 
 
 ```bash
 wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible
-wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible.edit.bash
+wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible.edit.ble
 chmod 755 bashible
-chmod 755 bashible.edit.bash
+chmod 755 bashible.edit.ble
 mv bashible /usr/local/bin
-mv bashible.edit.bash /usr/local/bin
+mv bashible.edit.ble /usr/local/bin
 ```
 
 Run the script
 
 ```bash
-bashible my-script.bash ARG1 ARG2 ...
+bashible my-script.ble ARG1 ARG2 ...
 ```
 
 or put she-bang in the beginning of the script and then run it directly
@@ -100,7 +115,7 @@ or put she-bang in the beginning of the script and then run it directly
 run it
 
 ```bash
-./my-script.bash ARG1 ARG2 ...
+./my-script.ble ARG1 ARG2 ...
 ```
 
 ## Functions
@@ -110,7 +125,6 @@ run it
 [@ MESSAGE](docs/@.md)  
 [- COMMAND ARGS ...](docs/-.md)  
 [absolute_path PATH](docs/absolute_path.md)  
-[always_output_to DEST COMMAND ARGS ...](docs/always_output_to.md)  
 [bashible_version](docs/bashible_version.md)  
 [base_dir PATH](docs/base_dir.md)  
 [delayed COMMAND ARGS ...](docs/delayed.md)  
@@ -119,11 +133,13 @@ run it
 [evaluate STRING](docs/evaluate.md)  
 [fail MESSAGE](docs/fail.md)  
 [finish MESSAGE](docs/finish.md)  
-[fill_var VAR COMMAND ARGS ...](docs/set_var.md)  
 [halt MESSAGE](docs/halt.md)  
 [not COMMAND ARGS ...](docs/not.md)  
-[may_fail COMMAND ARGS ...](docs/may_fail.md)  
-[output_to DEST COMMAND ARGS ...](docs/output_to.md)  
+[ignore_errors COMMAND ARGS ...](docs/ignore_errors.md)  
+[is_toplevel](docs/toplevel.md)  
+[is_var_empty VAR](docs/is_var_empty.md)  
+[output_to_file DEST OPTS COMMAND ARGS ...](docs/output_to_file.md)  
+[output_to_var NAME OPTS COMMAND ARGS ...](docs/output_to_var.md)  
 [orig_dir](docs/orig_dir.md)  
 [print_error MSG](docs/print_error.md)
 [print_info MSG](docs/print_info.md)
@@ -132,10 +148,6 @@ run it
 [reset_base_dir](docs/reset_base_dir.md)  
 [result NAME COMMAND ARGS ...](docs/result.md)  
 [run PATH ARGS ...](docs/run.md)  
-[set_var VAR VALUE](docs/set_var.md)  
-[toplevel](docs/toplevel.md)  
-[var_empty VAR](docs/var_empty.md)  
-[when COMMAND ARGS ...](docs/when.md)  
 [unless_already COMMAND ARGS ...](docs/unless_already.md)  
 [use FEATURES ...](docs/use.md)  
 

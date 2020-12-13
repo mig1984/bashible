@@ -2,9 +2,9 @@ expects bashible to be installed in /usr/local/bin (including it's modules)
 
 then run
 
-$ bashible ./add.bash
+$ bashible ./add.ble
 
 or
 
-$ bashible ./del.bash
+$ bashible ./del.ble
 

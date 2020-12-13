@@ -8,9 +8,9 @@
 # possible, but leave them commented.  Uncommented options override the
 # default value.
 
-Port generate_sshd_config.bash
+Port 23
 #AddressFamily any
-ListenAddress 23
+ListenAddress 127.0.0.1
 #ListenAddress ::
 
 # The default requires explicit activation of protocol 1
@@ -95,9 +95,9 @@ ChallengeResponseAuthentication no
 UsePAM yes
 
 #AllowAgentForwarding yes
-AllowTcpForwarding no
+AllowTcpForwarding yes
 #GatewayPorts no
-#X11Forwarding no
+X11Forwarding no
 #X11DisplayOffset 10
 #X11UseLocalhost yes
 #PermitTTY yes
@@ -110,7 +110,7 @@ PrintMotd no # pam does that
 #Compression delayed
 #ClientAliveInterval 0
 #ClientAliveCountMax 3
-#UseDNS no
+UseDNS no
 #PidFile /run/sshd.pid
 #MaxStartups 10:30:100
 #PermitTunnel no
@@ -125,7 +125,8 @@ Subsystem	sftp	/usr/lib/ssh/sftp-server
 
 # Example of overriding settings on a per-user basis
 #Match User anoncvs
-#	X11Forwarding no
-AllowTcpForwarding no
+	X11Forwarding no
+AllowTcpForwarding yes
 #	PermitTTY no
 #	ForceCommand cvs server
+This will be at the end

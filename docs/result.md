@@ -1,22 +1,22 @@
 ##### result NAME COMMAND ARGS...
 
-Stores result of the executed command. The command may fail.
+Stores result of the executed command. The command may fail and it won't stop the execution but store it's error code.
 
-Internally creates a new function which returns the stored exit status. This function is to be used with [when](when.md) .
+Internally it creates a new function which returns the stored exit status. This function is to be used with when [@](@.md).
 
-WARNING: use the result as the first function in the chain. Some functions, like [output_to](output_to.md), start another process to grab output of their commands.
-That means, the resulting function would not be propagated back to the parent.
+WARNING: use the 'result' as the first function in the chain. Some functions like [output_to_file](output_to_file.md) start another process to grab output of their commands.
+The resulting function would not be propagated to the parent.
 
 ```bash
 @ Try to synchronize files
   - result synced rsync /foo /bar
 
-@ Mail if synced
-  - when synced
+@ when synced
+@ Success, mailing it
   - mail me@me.com <<< "files synced ok"
 
-@ Mail unless synced
-  - when not synced
+@ when not synced
+@ Error happened, mailing it
   - mail me@me.com <<< "files not synced!!!"
 ```
 
@@ -26,36 +26,32 @@ It's possible to combine multiple checks into one result. Functions "true" and "
 
 result webserver_is_installed false
 
-@ Checking for programs
-  - when which nginx                       # is nginx there?
-  - when which php                         # is php there?
+@ when which nginx             # is nginx there?
+@ when which php               # is php there?
+@ Web stack is installed
   - result webserver_is_installed true
 ```
 
-Moreover, the newly created function accepts arguments. You can check a specific exit code:
+The newly created function accepts also arguments. You can check for a specific exit code:
 
 ```bash
-@ This will result in stored exit code 45
- - result res bash -c "exit 45"
+@ This will exit with code 45
+ - result stored_res bash -c "exit 45"
 
-@ Check result
- - when res == 0
- - echo res is 0
+@ when stored_res == 0
+@ The exitcode was zero
 
-@ Check result
- - when res == 1
- - echo res is 1
+@ when stored_res == 1
+@ The exitcode was 1
 
-@ Check result
- - when res == 2
- - echo res is 2
+@ when stored_res == 2
+@ The exitcode was 2
 
-@ Check result
- - when res -gt 5
- - when res -le 50
- - echo res is greater than 5 and lower or equal 50
+@ when stored_res -gt 5
+@ when stored_res -le 50
+@ The exitcode was greater than 5 and lower or equal 50
 ```
 
 ##### See also
 
-[when](when.md)  
+[@](@.md)  

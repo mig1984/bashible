@@ -1,4 +1,4 @@
-##### toplevel
+##### is_toplevel
 
 Returns true if the current script is the top (not a child sub-script).
 
@@ -7,6 +7,6 @@ it has to be called from within another bashible script.
 
 ```bash
 @ Basic checks
-  - not toplevel
+  - not is_toplevel
 ```
 

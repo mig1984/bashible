@@ -4,14 +4,12 @@ Runs the command and returns true if it's output is empty. Combine it with "not"
 
 ```bash
 @ Setting some variables and checking whether they contain something
-  - fill_var DOMAIN not empty cat /etc/myapp/domain.txt
-  - fill_var FOO not empty echo $BAR
+  - output_to_var DOMAIN not empty cat /etc/myapp/domain.txt
+  - output_to_var FOO not empty echo $BAR
 ```
 
 ##### See also
 
 [not](not.md)  
-[evaluate](evaluate.md)  
-[fill_var](fill_var.md)  
-[set_var](set_var.md)  
-[var_empty](var_empty.md)  
+[output_to_var](output_to_var.md)  
+[is_var_empty](var_empty.md)  

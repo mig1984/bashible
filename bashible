@@ -5,13 +5,13 @@
 # https://github.com/mig1984/bashible
 
 ble_version() {
-  echo 0.3
+  echo 0.1.0
 }
 
 ble_help() {
   echo "bashible version $(ble_version)"
   echo
-  echo "usage: bashible ./script.bash"
+  echo "usage: bashible ./script.ble"
   echo
   echo "see also: https://github.com/mig1984/bashible"
   echo
@@ -52,7 +52,7 @@ ble_cd_basedir() {
 
 ble_set_top_variables() {
   set +u
-  toplevel || fail "use 'run' to run child bashible scripts instead of running them directly!"
+  is_toplevel || fail "use 'run' to run child bashible scripts instead of running them directly!"
   set -u
   export _BLE_LEVEL=0
   export _BLE_NAV=''
@@ -74,13 +74,13 @@ ble_set_variables() {
   _BLE_ORIG_BASE_DIR=${_BASE_DIR}
   let _BLE_LEVEL=${_BLE_LEVEL}+1
   if test ${#_BLE_NAV} -eq 0 ; then
-    _BLE_NAV="`basename ${_BLE_SCRIPT_PATH} | sed "s/\.bash\$//" `"
+    _BLE_NAV="`basename ${_BLE_SCRIPT_PATH} | sed "s/\.ble\$//" `"
   else
-    _BLE_NAV="${_BLE_NAV} -> `basename ${_BLE_SCRIPT_PATH} | sed "s/\.bash\$//" `"
+    _BLE_NAV="${_BLE_NAV} -> `basename ${_BLE_SCRIPT_PATH} | sed "s/\.ble\$//" `"
   fi
   _BLE_SKIP=0                      # skipping mode? will be reset on a next block
-  _BLE_WHEN_USED=0                 # "-" will set skipping mode depending on the final result
   _BLE_FINISHED=0                  # to detect unhandled exits (pipefail, errexit)
+  _BLE_IN_BLOCK=0
   export _BLE_NAV
   export _BLE_LEVEL
 }
@@ -111,7 +111,7 @@ ble_trap_exit() {
 
 ble_trap_termination(){
   trap "
-    if toplevel && ((\$$==\$BASHPID)); then
+    if is_toplevel && ((\$$==\$BASHPID)); then
       # in the toplevel script and not it's subshell
       if ((_BLE_SUBSHELL_PID)); then
         ble_print_fail \"process terminated, sending TERM to all processes in the process group \${_BLE_SUBSHELL_PID}\"
@@ -157,40 +157,66 @@ ble_serialize_command() {
 ### CORE FUNCTIONS ###
 
 @() {
-  _BLE_SKIP=0
-  ble_cd_basedir
-  ble_print_block "$*"
+  if test "$1" = 'when'; then
+    if ((_BLE_IN_BLOCK=1)); then
+      _BLE_IN_BLOCK=0
+      _BLE_SKIP=0      # reset skip mode
+    fi
+    local ex=0
+    shift;
+    "$@" || ex=$? # || bypasses errexit
+    if ((ex!=0)); then # 'when' did not pass, set the skipping mode
+      _BLE_SKIP=1
+    fi
+  else
+    if ((_BLE_IN_BLOCK==1)) && ((_BLE_SKIP==1)); then
+      _BLE_SKIP=0
+    fi
+    _BLE_IN_BLOCK=1
+    if ((_BLE_SKIP==0)); then
+      ble_cd_basedir
+      ble_print_block "$*"
+    fi
+  fi
 }
 
 -() {
-  if test $# -eq 0; then
-    if ((_BLE_SKIP==0)); then
-      print_info "-|| in action"  # -|| for, -|| while, -|| continue, etc. => does the loop/continue unless skip mode is active
-      return 1
-    else
+  if ((_BLE_SKIP==0)); then
+
+    # -&& for ...
+    # -&& while ...
+    # -&& continue
+    if test $# -eq 0; then
+      print_info "-&& in action"
       return 0
     fi
-  fi
 
-  if ((_BLE_SKIP!=1)); then
+    # - foovar = barvalue
+    if test ${#} -gt 1  && test "$2" = "="; then
+      ble_print_task "$*"
+      var=$1
+      shift
+      eval "$var=\$*"
+      return
+    fi
+
+    # - command
     ble_print_task "$*"
     ble_check_cmd "$1"
-    _BLE_WHEN_USED=0
     local ex=0
     "$@" || ex=$?
-    if ((_BLE_WHEN_USED==1)); then
-      # 'when' has been used
-      # => set skip mode if the command passed
-      # always return 0 (the command may fail)
-      if ((ex!=0)); then   
-        print_info "skipping following tasks"
-        _BLE_SKIP=1
-      fi
-      return 0
-    else
-      # explicitly do exit, do not rely on set -e which is disabled in subshells (via 'run')
-      ble_handle_exitstatus $ex "$@" || ble_exit $?  
+    # explicitly do exit, do not rely on set -e which is disabled in subshells (via 'run')
+    ble_handle_exitstatus $ex "$@" || ble_exit $?
+
+  else
+
+    # -&& for ... (skipping)
+    # -&& while ... (skipping)
+    # -&& continue (skipping)
+    if test $# -eq 0; then
+      return 1
     fi
+
   fi
 }
 
@@ -207,16 +233,6 @@ absolute_path() {
   echo "$path"
 }
 
-always_output_to() {
-  local dest=$1; shift
-  test "${#dest}" -gt 0 || fail "always_output_to: no destination file specified"
-  ble_check_cmd "$1"
-  local ex=0
-  "$@" | tee $dest.tmp || ex=$?
-  mv "$dest.tmp" "$dest"
-  ble_handle_exitstatus $ex "$@"
-}
-
 base_dir() {
   _BASE_DIR=`absolute_path "$1"`
   ble_cd_basedir
@@ -227,9 +243,8 @@ run() {
      ble_set_variables "$1"
      ble_trap_termination
      ble_trap_exit
-     # FIXME: there's no way to re-enable "set -e" which does not work in the subshell
-     # => therefore "-" does exit explicitly and does not rely on the errexit
      set -eu -o pipefail +m
+     shopt -s inherit_errexit
      ble_run_script "$@"
   )
   local ex=$?
@@ -287,17 +302,6 @@ finish() {
   ble_exit 0
 }
 
-fill_var() {
-  local var=$1; shift
-  ble_check_cmd "$1"
-  local buf
-  if buf=` "$@" `; then
-    print_info "$var=$buf"
-    eval "$var=\$buf"
-  else
-    ble_handle_exitstatus $? "$@"
-  fi
-}
 
 halt() {
   if test $# -eq 0; then
@@ -309,12 +313,21 @@ halt() {
 }
 
 # but still fails if the command does not exist
-may_fail() {
+ignore_errors() {
   ble_check_cmd "$1"
   local old=${_BLE_SUPPRESS_ERRORS}
   export _BLE_SUPPRESS_ERRORS=1
   "$@" || ble_handle_exitstatus $? "$@" || true
   export _BLE_SUPPRESS_ERRORS=$old
+}
+
+is_toplevel() {
+  ((_BLE_LEVEL==0))
+}
+
+is_empty_var() {
+  local var=$1
+  eval "test \${#$var} -eq 0"
 }
 
 not() {
@@ -330,19 +343,89 @@ not() {
   fi
 }
 
-output_to() {
+# output_to_file foo.txt -1 -2 --append ls /home
+output_to_file() {
+  local stdout=0
+  local stderr=0
+  local append=0
+  local cnt=0
+
   local dest=$1; shift
-  test "${#dest}" -gt 0 || fail "output_to: no destination file specified"
-  ble_check_cmd "$1"
-  if "$@" | tee $dest.tmp; then
-    mv "$dest.tmp" "$dest"
-  else
-    local ex=$?
-    rm "$dest.tmp" 2>/dev/null
-    ble_handle_exitstatus $ex "$@"
-  fi
+  test "${#dest}" -gt 0 || fail "output_to_file: no destination file specified"
+
+  for i in "$@"; do
+  case "$1" in
+    -1|--stdout)
+      stdout=1
+      let cnt=cnt+1
+      shift
+      ;;
+    -2|--stderr)
+      stderr=1
+      let cnt=cnt+1
+      shift
+      ;;
+    -a|--append)
+      append=1
+      let cnt=cnt+1
+      shift
+      ;;
+    *) # a command
+
+      ((cnt==0)) && stdout=1 # default if no opts
+      local s=''
+      local ap=''
+      ((append==1)) && ap=">>" || ap=">"
+      ((stdout==1)) && s="$s 1$ap\$dest"
+      ((stderr==1)) && s="$s 2$ap\$dest"
+
+      ble_check_cmd "$1"
+      local ex=0
+      eval "\"\$@\" $s" || ex=$?
+      ble_handle_exitstatus $ex "$@"
+      return $?  # of the handler
+      ;;
+  esac
+  done
 }
 
+# output_to_var foobar -1 -2 ignore_errors ls /home
+output_to_var() {
+  local stdout=0
+  local stderr=0
+  local cnt=0
+  local var=$1; shift
+
+  for i in "$@"; do
+  case "$1" in
+    -1|--stdout)
+      stdout=1
+      let cnt=cnt+1
+      shift
+      ;;
+    -2|--stderr)
+      stderr=1
+      let cnt=cnt+1
+      shift
+      ;;
+    *) # a command
+
+      ((cnt==0)) && stdout=1 # default if no opts
+      local s=''
+      ((stdout==1 && stderr==1)) && s="2>&1"
+      ((stdout==0)) && s="$s 1>/dev/null"
+
+      eval "$var=''" # initialize the variable to prevent unbound variable error if the command fails
+      local ex=0
+      eval "$var=\` \"\$@\" $s \`" || ex=$?
+      eval "print_info \"\$var=\$$var\""
+      ble_handle_exitstatus $ex "$@"
+
+      return $? # of the handler
+      ;;
+  esac
+  done
+}
 
 orig_dir() {
   cd "${_BLE_ORIG_DIR}"
@@ -379,33 +462,13 @@ result() {
   eval "
     $name() {
       if test \$# -gt 0; then
-        test \"$ex\" \"\$@\"; # with arguments - to test exitcode
+        test $ex \"\$@\"; # with arguments - to test exitcode
       else
-        return \"$ex\"        # without - to test boolean
+        return $ex        # without - to test boolean
       fi
     }
   "
   return 0
-}
-
-set_var() {
-  var=$1
-  shift
-  eval "$var=\$*"
-}
-
-toplevel() {
-  ((_BLE_LEVEL==0))
-}
-
-var_empty() {
-  local var=$1
-  eval "test \${#$var} -eq 0"
-}
-
-when() {
-  _BLE_WHEN_USED=1
-  "$@" || return $? # || bypasses errexit
 }
 
 unless_already() {
@@ -422,7 +485,7 @@ unless_already() {
 
 use() {
   for i in "$@"; do
-    source "${_BLE_DIR}/bashible.$i.bash" || fail "use: can't load ${_BLE_DIR}/bashible.$i.bash"
+    source "${_BLE_DIR}/bashible.$i.ble" || fail "use: can't load ${_BLE_DIR}/bashible.$i.ble"
   done
 }
 
@@ -444,6 +507,9 @@ fi
 
 # be strict
 set -eu -o pipefail
+
+# otherwise set -e is disabled in subprocesses
+shopt -s inherit_errexit
 
 # use a new process group
 set -m

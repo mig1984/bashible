@@ -1,0 +1,4 @@
+#!/usr/local/bin/bashible
+
+@ I am main process with pid $$, going to run child.ble
+- run child.ble
