@@ -1,6 +1,6 @@
 #### - COMMAND [ARG1] [ARG2] ...
 
-Represents a task. The task may be a command or a bash function. (Actually, the '-' itself is a bash function and everything that follows are arguments.)
+Does a command if conditions match. The command may be also a bash function. (Actually, the '-' itself is a bash function and everything that follows are it's arguments.)
 
 When the command exits nonzero, further execution of the script (and all caller scripts) is halted and an error is displayed.
 
@@ -19,19 +19,6 @@ You can prefix it with [ignore_errors](ignore_errors.md) to avoid stopping execu
   - ignore_errors rm /tmp/temp2
 ```
 
-Conditional for / while loop or 'continue': 
-
-Sometimes you need to use a loop. The loop should be executed only if the condition of the block passes.
-In this case, you have to use "-&&" or "- &&"
-
-```bash
-
-output_to_var DBS cat databases_to_install.txt
-
-@ Installing databases
-  when is not empty_var DBS
-  - && for db in $DBS; do yum_install $db; done
-```
 ##### See also
 
 [- VARIABLE = VALUE](dash2.md)  
