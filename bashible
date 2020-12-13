@@ -78,7 +78,9 @@ ble_set_variables() {
   else
     _BLE_NAV="${_BLE_NAV} -> `basename ${_BLE_SCRIPT_PATH} | sed "s/\.ble\$//" `"
   fi
-  _BLE_SKIP=0                      # skipping mode? will be reset on a next block
+  _BLE_ANDOR=0                     # main conditional mode (0=AND 1=OR)
+  _BLE_ANDSKIP=0                   # skipping mode for AND
+  _BLE_ORSKIP=1                    # skipping mode for OR
   _BLE_FINISHED=0                  # to detect unhandled exits (pipefail, errexit)
   _BLE_IN_BLOCK=0
   export _BLE_NAV
@@ -157,23 +159,66 @@ ble_serialize_command() {
 ### CORE FUNCTIONS ###
 
 @() {
-  if test "$1" = 'when'; then
-    if ((_BLE_IN_BLOCK=1)); then
+
+  # when|and when => AND mode (will enable _BLE_ANDSKIP unless command passes)
+  if test "$1" = 'when' || test "$1" = 'and'; then
+    test "$2" = 'when' && shift  # 'and when'
+    shift
+
+    _BLE_ANDOR=0
+
+    if ((_BLE_IN_BLOCK==1)); then
       _BLE_IN_BLOCK=0
-      _BLE_SKIP=0      # reset skip mode
+      _BLE_ANDSKIP=0      # reset AND skip mode
     fi
-    local ex=0
-    shift;
-    "$@" || ex=$? # || bypasses errexit
-    if ((ex!=0)); then # 'when' did not pass, set the skipping mode
-      _BLE_SKIP=1
+
+    if ((_BLE_ANDSKIP==0)); then
+      local ex=0
+      "$@" || ex=$? # || bypasses errexit
+      if ((ex!=0)); then # command didn't pass, from now on AND mode will skip
+        _BLE_ANDSKIP=1
+      fi
     fi
+    
+  # or|or when => OR mode (will disable _BLE_ORSKIP if a command passes)
+  elif test "$1" = 'or'; then
+    test "$2" = 'when' && shift  # 'or when'
+    shift
+    
+    _BLE_ANDOR=1
+
+    if ((_BLE_IN_BLOCK==1)); then
+      _BLE_IN_BLOCK=0
+      _BLE_ORSKIP=1      # reset OR skip mode
+    fi
+
+    if ((_BLE_ORSKIP==1)); then
+      local ex=0
+      "$@" || ex=$? # || bypasses errexit
+      if ((ex==0)); then # command passed, from now on the OR mode will not skip
+        _BLE_ORSKIP=0
+      fi
+    fi
+
+  # print the block message (unless both skip modes)
   else
-    if ((_BLE_IN_BLOCK==1)) && ((_BLE_SKIP==1)); then
-      _BLE_SKIP=0
+
+    # no conditions? new block starts just after another? => reset
+    if ((_BLE_IN_BLOCK==1)); then
+      if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==1)) ||
+         ((_BLE_ANDOR==1 && _BLE_ORSKIP==1))
+      then
+        _BLE_ANDSKIP=0
+        _BLE_ORSKIP=1
+        _BLE_ANDOR=0
+      fi
     fi
+    
     _BLE_IN_BLOCK=1
-    if ((_BLE_SKIP==0)); then
+    
+    if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==0)) ||
+       ((_BLE_ANDOR==1 && _BLE_ORSKIP==0))
+    then
       ble_cd_basedir
       ble_print_block "$*"
     fi
@@ -181,7 +226,9 @@ ble_serialize_command() {
 }
 
 -() {
-  if ((_BLE_SKIP==0)); then
+  if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==0)) ||
+     ((_BLE_ANDOR==1 && _BLE_ORSKIP==0))
+  then
 
     # -&& for ...
     # -&& while ...
@@ -309,7 +356,7 @@ is_toplevel() {
 is_empty_dir() {
   local buf
   if buf=` ls -A $1 | wc -l `; then
-    ((buf>0))
+    ((buf==0))
   else
     ble_handle_exitstatus $? "$@"
   fi
@@ -489,6 +536,18 @@ use() {
     source "${_BLE_DIR}/bashible.$i.ble" || fail "use: can't load ${_BLE_DIR}/bashible.$i.ble"
   done
 }
+
+### SUGAR ###
+
+# when not is_empty_dir
+# => when is not empty_dir
+
+is() { "$@"; }
+empty_dir() { is_empty_dir "$@";}
+empty_var() { is_empty_var "$@";}
+empty_file() { is_empty_file "$@";}
+empty_output() { is_empty_output "$@";}
+
 
 ################
 #### START #####

@@ -1,3 +1,38 @@
+0.1.1
+  - bug in is_empty_dir (worked the other way round)
+  
+  - added AND / OR conditions
+  
+    Now you can use multiple conditions of a block. (Just don't mix them :-)
+  
+    @ when test -f /etc/passwd
+    @ and test -f /etc/shadow
+    @ and test -f /etc/group
+    @ Everything is installed
+      - foo
+      - bar
+
+    @ when which php7
+    @ or which php6
+    @ or which php5
+    @ A PHP version is installed
+      - foo
+      - bar
+
+    It is also possible to write 'and when' and 'or when'.
+
+    If all rows begin with 'when', it means AND.
+  
+  - added sugar
+  
+    Now you can also write
+    
+    @ when is not empty_dir /tmp
+    
+    instead of
+    
+    @ when not is_empty_dir /tmp
+
 0.1.0
   - versioning changed to follow semver.org's rules
   

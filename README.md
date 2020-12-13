@@ -141,15 +141,20 @@ run it
 [output_to_file DEST OPTS COMMAND ARGS ...](docs/output_to_file.md)  
 [output_to_var NAME OPTS COMMAND ARGS ...](docs/output_to_var.md)  
 [orig_dir](docs/orig_dir.md)  
-[print_error MSG](docs/print_error.md)
-[print_info MSG](docs/print_info.md)
-[print_warn MSG](docs/print_warn.md)
+[print_error MSG](docs/print_error.md)  
+[print_info MSG](docs/print_info.md)  
+[print_warn MSG](docs/print_warn.md)  
 [quiet COMMAND ARGS ...](docs/quiet.md)  
 [reset_base_dir](docs/reset_base_dir.md)  
 [result NAME COMMAND ARGS ...](docs/result.md)  
 [run PATH ARGS ...](docs/run.md)  
 [unless_already COMMAND ARGS ...](docs/unless_already.md)  
 [use FEATURES ...](docs/use.md)  
+
+### sugar
+
+Instead of 'when not is_empty_dir /home' you can write 'when is not empty_dir /home'.
+Similarly empty_output and empty_var.
 
 ### file-editing functions - found in bashible.edit module
 
