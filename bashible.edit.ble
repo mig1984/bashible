@@ -6,7 +6,7 @@ add_line() {
   local line=$1
   local path=$2
   quiet head -n 1 "$path" || { print_error "add_line: can't read file '$path'"; return 1; }
-  if ! quiet grep -F "$line" "$path"; then
+  if ! quiet grep -Fx "$line" "$path"; then
     echo "$line" >> "$path" || { print_error "add_line: can't write to file '$path'"; return 1; }
   else
     print_info "already"
