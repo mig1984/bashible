@@ -1,6 +1,6 @@
 #!/usr/local/bin/bashible
 
-@ This will exit with exitcode 45
+@ This will exit with exitcode 10
  - register exitcode as 'stored_res' of bash -c "exit 10"
 
 @ The exitcode was zero
@@ -32,7 +32,6 @@
   when stored_res -eq 4
   or stored_res -eq 6
   or stored_res -eq 10
-
 #  - cmd1
 #  - cmd2
 #  ...
