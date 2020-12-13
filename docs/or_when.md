@@ -17,6 +17,6 @@ You can write 'or when test...' or just 'or test...'
 
 ##### See also
 
-[and when](and_when.md)..
-[or when](and_when.md)..
+[and when](and_when.md)  
+[or when](and_when.md)  
 [@](@.md)  
