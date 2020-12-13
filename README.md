@@ -175,19 +175,19 @@ run it
 
 ### sugar
 
-These do the same:
-
-when not is_empty_dir /home
-when is not empty_dir /home
-
-when not is_empty_var HOSTNAME
-when is not empty_var HOSTNAME
-
-when not is_empty_output ls /home
-when is not empty_output of ls /home
-
-result synced rsync /foo /bar
-register exitcode as 'synced' of rsync /foo /bar
+These do the same:  
+  
+when not is_empty_dir /home  
+when is not empty_dir /home  
+  
+when not is_empty_var HOSTNAME  
+when is not empty_var HOSTNAME  
+  
+when not is_empty_output ls /home  
+when is not empty_output of ls /home  
+  
+result synced rsync /foo /bar  
+register exitcode as 'synced' of rsync /foo /bar  
 
 ### file-editing functions - found in bashible.edit module
 
