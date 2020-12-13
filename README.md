@@ -21,13 +21,8 @@ At the moment, bashible has been used on Arch linux. It may not be compatible wi
 Suggestions and bugfixes are welcome! :-)
 
 
-## Example output
 
-(output of examples/editing_files/add.ble)
-
-![output of add.ble](add.png)
-
-## Example script.ble
+## Example script
 
 `@` represents a block of tasks, `-` represents a task. Both `@` and `-` are just bash functions with arguments.
 
@@ -49,7 +44,7 @@ The working directory is automatically set to the script's. All tasks will stop 
   - mail me@me.com <<< "synchronzation failed"
 ```
 
-![output of synced.ble](synced.png)
+![output of the example](example.png)
 
 Rewritten into pure Bash, the example above may look like this,
 
@@ -70,6 +65,12 @@ else
   mail me@me.com <<< "synchronzation failed"
 fi
 ```
+
+## Another example output
+
+(output of running examples/editing_files/add.ble)
+
+![output of add.ble](add.png)
 
 ## Another example
 
