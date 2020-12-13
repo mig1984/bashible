@@ -23,8 +23,9 @@ Suggestions and bugfixes are welcome! :-)
 
 ## Example output
 
-![Example output](bashible.png)
+(output of examples/editing_files/add.ble)
 
+![output of add.ble](add.png)
 
 ## Example script.ble
 
@@ -48,7 +49,9 @@ The working directory is automatically set to the script's. All tasks will stop 
   - mail me@me.com <<< "synchronzation failed"
 ```
 
-Rewritten into pure Bash, the example above could look like this,
+![output of synced.ble](synced.png)
+
+Rewritten into pure Bash, the example above may look like this,
 
 ```bash
 #!/bin/bash
@@ -67,7 +70,6 @@ else
   mail me@me.com <<< "synchronzation failed"
 fi
 ```
-
 
 ## Another example
 
