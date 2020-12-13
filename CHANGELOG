@@ -1,0 +1,88 @@
+0.0.4
+
+  - default script extension is .ble
+    
+  - versioning changed to follow semver.org's rules
+
+    
+  - conditional block execution has been changed
+  
+    use '@ when' before a block starts (or multiple when to achieve AND)
+
+    @ when true
+    @ Doing something...
+      - ls /
+
+    @ when false
+    @ Not doing anything...
+      - ls /tmp
+
+    @ Doing always...
+      - ls /home
+    
+    @ when foo
+    @ when bar
+    @ Executed if foo and bar matches
+      - baz
+
+    In previous versions of bashible, 'when' was used inside a block. 
+    Therefore even if it didn't pass, the block was printed
+    (and it was not obvious what is going on).
+
+  - set_var/fill_var
+  
+    There were two functions in previous versions, set_var and fill_var.
+    The first did just foo=bar, the second ran it's arguments (command) and 
+    set a variable to the command's stdout.
+
+    Now it is more straightforward:
+
+    @ Setting some fixed variables if this block passes
+      - foo = bar
+      - abc = xyz
+    
+    @ Storing stdout of commands to variables
+      - output_to_var user_homes ls /home
+      - output_to_var myip evaluate "host foo.com | grep has address"
+
+    It also takes some options: --stdout, --stderr
+
+    @ Storing only stderr of the command
+      - output_to_var error_message ignore_errors find /nonexistent
+      - echo $error_message
+
+  - output_to_file
+  
+    Similar function for storing an output of a command into a file.
+    Moreover it accepts --append option to append data at the end of the file.
+
+  - to register both exitcode and stdout of a command use a combination
+    of 'result' and 'output_to_var' (just remember that the 'result' must preceede 'output_to_var'
+    because it runs a sub-process, otherwise the variable won't get propagated to the parent process)
+
+    @ Installing nginx
+      - result installed output_to_var log apt-get install nginx
+      - echo STORED OUTPUT: $log
+
+    @ when installed
+    @ Installation succeeded
+
+    @ when not installed
+    @ Error happened while installation, mailing the output
+      - mail me@me.com <<< $log
+
+  - renamed functions:
+
+      may_fail  => ignore_errors
+      toplevel  => is_toplevel
+      var_empty => is_empty_var
+
+  - shopt -s inherit_errexit by default
+
+  - there were some other suggestions on modules (how to make them like ansible's)
+
+    It will happen in a next version of bashible.
+
+
+0.3
+  - first release
