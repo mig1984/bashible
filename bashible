@@ -549,7 +549,7 @@ use() {
 is() { "$@"; }
 of() { "$@"; }
 as() { "$@"; }
-register() { test "$1" = 'exitcode' && shift; test "$1" = 'as' && shift; result "$@"; }
+register() { test "$1" = 'exitcode' -o "$1" = 'result' && shift; test "$1" = 'as' && shift; result "$@"; }
 empty_dir() { is_empty_dir "$@";}
 empty_var() { is_empty_var "$@";}
 empty_file() { is_empty_file "$@";}

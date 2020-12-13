@@ -175,24 +175,19 @@ run it
 
 ### sugar
 
-Instead of 
+These do the same:
 
-'when not is_empty_dir /home' 
+when not is_empty_dir /home
+when is not empty_dir /home
 
-you can write
+when not is_empty_var HOSTNAME
+when is not empty_var HOSTNAME
 
-'when is not empty_dir /home'
+when not is_empty_output ls /home
+when is not empty_output of ls /home
 
-(similarly empty_output and empty_var)
-
-
-There are some words which does nothing, like 'is', 'of' or 'register'.
-
-'result synced rsync /foo /bar'
-
-is better readable as
-
-'register result synced of rsync /foo /bar'
+result synced rsync /foo /bar
+register exitcode as 'synced' of rsync /foo /bar
 
 ### file-editing functions - found in bashible.edit module
 
