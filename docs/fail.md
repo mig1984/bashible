@@ -6,8 +6,8 @@ It will exit with exitcode 42.
 
 ```bash
 
-@ when not test -x /usr/sbin/nginx
 @ Basic checks
+  when not test -x /usr/sbin/nginx
   - fail "nginx must be installed first"
 
 ```

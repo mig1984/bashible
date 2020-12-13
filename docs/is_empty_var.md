@@ -8,7 +8,7 @@ Return true if the variable is empty or unset.
 
 @ when is not empty_var DATABASES
 @ Installing databases
-  -&& for db in $DATABASES; do
+  - && for db in $DATABASES; do
     - run ./install-db.bash "$db"
   done
 ```

@@ -1,3 +1,27 @@
+0.2.0
+  - system of conditions has changed
+
+    The previous way with @ in the beginning was ugly:
+  
+    @ when test -f /etc/passwd
+    @ and test -f /etc/shadow
+    @ and test -f /etc/group
+    @ Everything is installed
+      - do foo
+      - do bar
+
+    From now on, put conditions right after the @ block:
+
+    @ Everything is installed
+      when test -f /etc/passwd
+      and test -f /etc/shadow
+      and test -f /etc/group
+      - do foo
+      - do bar
+
+    The block won't print itself unless conditions match.
+
+
 0.1.1
   - bug in is_empty_dir (worked the other way round)
   

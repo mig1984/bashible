@@ -34,13 +34,13 @@ The working directory is automatically set to the script's. All tasks will stop 
 @ Synchronizing files
   - register exitcode as 'synced' of rsync -av /foo /bar
 
-@ when synced
-@ and test -f /etc/do-shutdown
 @ Shutting down the machine after successful synchronization
+  when synced
+  and test -f /etc/do-shutdown
   - shutdown -h now
 
-@ when not synced
 @ Error happened, sending an e-mail
+  when not synced
   - mail me@me.com <<< "synchronzation failed"
 ```
 
@@ -147,6 +147,9 @@ run it
 ### core functions
 
 [@ MESSAGE](docs/@.md)  
+[when](docs/when.md)  
+[and when](docs/and_when.md)  
+[or when](docs/or_when.md)  
 [- COMMAND ARGS ...](docs/-.md)  
 [absolute_path PATH](docs/absolute_path.md)  
 [bashible_version](docs/bashible_version.md)  

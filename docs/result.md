@@ -11,12 +11,12 @@ The resulting function would not be propagated to the parent.
 @ Try to synchronize files
   - result synced rsync /foo /bar
 
-@ when synced
 @ Success, mailing it
+  when synced
   - mail me@me.com <<< "files synced ok"
 
-@ when not synced
 @ Error happened, mailing it
+  when not synced
   - mail me@me.com <<< "files not synced!!!"
 ```
 
@@ -26,9 +26,9 @@ It's possible to combine multiple checks into one result. Functions "true" and "
 
 result webserver_is_installed false
 
-@ when which nginx             # is nginx there?
-@ and which php                # is php there?
 @ Web stack is installed
+  when which nginx             # is nginx there?
+  and which php                # is php there?
   - result webserver_is_installed true
 ```
 
@@ -38,23 +38,24 @@ The newly created function accepts also arguments. You can check for a specific 
 @ This will exit with code 45
  - result stored_res bash -c "exit 45"
 
-@ when stored_res == 0
 @ The exitcode was zero
+  when stored_res == 0
 
-@ when stored_res == 1
 @ The exitcode was 1
+  when stored_res == 1
 
-@ when stored_res == 2
 @ The exitcode was 2
+  when stored_res == 2
 
-@ when stored_res -gt 5
-@ and stored_res -le 50
 @ The exitcode was greater than 5 and lower or equal 50
+  when stored_res -gt 5
+  and stored_res -le 50
 
-@ when stored_res -eq 4
-@ or stored_res -eq 7
-@ or stored_res -eq 10
 @ The exitcode is either 4, 7 or 10
+  when stored_res -eq 4
+  or stored_res -eq 7
+  or stored_res -eq 10
+
 ```
 
 ##### See also

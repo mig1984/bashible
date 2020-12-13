@@ -5,7 +5,7 @@
 # https://github.com/mig1984/bashible
 
 ble_version() {
-  echo 0.1.0
+  echo 0.2.0
 }
 
 ble_help() {
@@ -22,12 +22,23 @@ ble_help() {
   echo
 }
 
+ble_conditions_passed() {
+  if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==0)) ||
+     ((_BLE_ANDOR==1 && _BLE_ORSKIP==0)); then
+     return 0;
+  fi
+  return 1;
+}
+
 ble_print_start() {
   echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m START \033[0m\n" >&2
 }
 
 ble_print_block() {
-  echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m $* \033[0m\n" >&2
+  if ble_conditions_passed && ((${#_BLE_BLOCK_MESSAGE}>0)); then
+    echo -e "\n\033[1;37;45m ${_BLE_NAV} \033[1;37;44m ${_BLE_BLOCK_MESSAGE} \033[0m\n" >&2
+    _BLE_BLOCK_MESSAGE=''
+  fi
 }
 
 ble_print_task() {
@@ -81,8 +92,8 @@ ble_set_variables() {
   _BLE_ANDOR=0                     # main conditional mode (0=AND 1=OR)
   _BLE_ANDSKIP=0                   # skipping mode for AND
   _BLE_ORSKIP=1                    # skipping mode for OR
+  _BLE_BLOCK_MESSAGE=''
   _BLE_FINISHED=0                  # to detect unhandled exits (pipefail, errexit)
-  _BLE_IN_BLOCK=0
   export _BLE_NAV
   export _BLE_LEVEL
 }
@@ -159,18 +170,19 @@ ble_serialize_command() {
 ### CORE FUNCTIONS ###
 
 @() {
+   ble_print_block        # command did not print the last block? do it now
+   _BLE_ANDSKIP=0
+   _BLE_ORSKIP=1
+   _BLE_ANDOR=0
+   _BLE_BLOCK_MESSAGE=$*  # store the message, will be printed on first command or on next block
+   ble_cd_basedir
+}
 
-  # when|and when => AND mode (will enable _BLE_ANDSKIP unless command passes)
-  if test "$1" = 'when' || test "$1" = 'and'; then
-    test "$2" = 'when' && shift  # 'and when'
-    shift
+# when|and when => AND mode (will enable _BLE_ANDSKIP unless command passes)
+and() {
+    test "$1" = 'when' && shift  # 'and when'
 
     _BLE_ANDOR=0
-
-    if ((_BLE_IN_BLOCK==1)); then
-      _BLE_IN_BLOCK=0
-      _BLE_ANDSKIP=0      # reset AND skip mode
-    fi
 
     if ((_BLE_ANDSKIP==0)); then
       local ex=0
@@ -178,19 +190,19 @@ ble_serialize_command() {
       if ((ex!=0)); then # command didn't pass, from now on AND mode will skip
         _BLE_ANDSKIP=1
       fi
+      if ((ex==0)); then # command passed, from now on the OR mode will not skip
+        _BLE_ORSKIP=0
+      fi
     fi
-    
-  # or|or when => OR mode (will disable _BLE_ORSKIP if a command passes)
-  elif test "$1" = 'or'; then
-    test "$2" = 'when' && shift  # 'or when'
-    shift
+}
+
+when() { and "$@"; }
+
+# or|or when => OR mode (will disable _BLE_ORSKIP if a command passes)
+or() {  
+    test "$1" = 'when' && shift  # 'or when'
     
     _BLE_ANDOR=1
-
-    if ((_BLE_IN_BLOCK==1)); then
-      _BLE_IN_BLOCK=0
-      _BLE_ORSKIP=1      # reset OR skip mode
-    fi
 
     if ((_BLE_ORSKIP==1)); then
       local ex=0
@@ -199,36 +211,13 @@ ble_serialize_command() {
         _BLE_ORSKIP=0
       fi
     fi
-
-  # print the block message (unless both skip modes)
-  else
-
-    # no conditions? new block starts just after another? => reset
-    if ((_BLE_IN_BLOCK==1)); then
-      if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==1)) ||
-         ((_BLE_ANDOR==1 && _BLE_ORSKIP==1))
-      then
-        _BLE_ANDSKIP=0
-        _BLE_ORSKIP=1
-        _BLE_ANDOR=0
-      fi
-    fi
-    
-    _BLE_IN_BLOCK=1
-    
-    if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==0)) ||
-       ((_BLE_ANDOR==1 && _BLE_ORSKIP==0))
-    then
-      ble_cd_basedir
-      ble_print_block "$*"
-    fi
-  fi
 }
 
 -() {
-  if ((_BLE_ANDOR==0 && _BLE_ANDSKIP==0)) ||
-     ((_BLE_ANDOR==1 && _BLE_ORSKIP==0))
-  then
+
+  if ble_conditions_passed; then
+
+    ble_print_block
 
     # -&& for ...
     # -&& while ...
@@ -599,6 +588,8 @@ ble_trap_top_exit
   ble_run_script "${_BLE_SCRIPT_PATH}" "$@"
 
   test $? -ne 0 && ble_exit $? # do not use || on the line above, it would disable errexit (still it works well only in the top script)
+
+  ble_print_block # print the last block unless already
 
   # run delayed commands
   # (they will exit immediately on failure unless prefixed by "may_fail")
