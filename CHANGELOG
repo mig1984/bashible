@@ -46,7 +46,9 @@
     It also takes some options: --stdout, --stderr
 
     @ Storing only stderr of the command
-      - output_to_var error_message ignore_errors find /nonexistent
+      - output_to_var error_message --stderr ignore_errors find /nonexistent
+      # or the same
+      - output_to_var error_message -2 ignore_errors find /nonexistent
       - echo $error_message
 
   - output_to_file
