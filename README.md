@@ -8,9 +8,9 @@ What needs to be done:
 
 The question is, why Ansible is so popular? And my answer is: it has lots of modules for setting-up whatever you imagine. Bashible could offer the same - shared scripts. For instance a script for a webserver:
 
-$ webserver --add-domain foobar.com..
-$ webserver --htpasswd foobar.com user password..
-$ webserver --disable-domain foobar.com..
+$ webserver --add-domain foobar.com  
+$ webserver --htpasswd foobar.com user password  
+$ webserver --disable-domain foobar.com  
 
 etc.
 
