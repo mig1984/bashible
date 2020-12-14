@@ -1,3 +1,29 @@
+# Hi, guys!
+
+I am glad to see Bashible developing. In the beginning, I thought it will be just another useless project. But it seems to be interresting also for others.
+
+Yesterday I finally spend the day by implementing changes from past months. The "core" is getting stable, at least from the "language" perspective.
+
+What needs to be done:
+
+The question is, why Ansible is so popular? And my answer is: it has lots of modules for setting whatever you imagine. Bashible could offer the same - shared scripts. For instance a script for setting-up a webserver:
+
+$ webserver --add-domain foobar.com
+$ webserver --htpasswd foobar.com user password
+$ webserver --disable-domain foobar.com
+
+etc.
+
+You can sript whatever you like.
+
+I like Python very much. I love Ruby. But still, I never got the point of re-writing shell scripts in higher languages.
+
+And finally, there should be a standard way to deploy scripts to multiple machines (aka Ansible's inventory). Using ssh/pdsh perhaps?
+
+I am looking forward suggestions!
+
+Jan
+
 # BASHIBLE
 
 Bashible is a deployment/automation tool written in Bash (DSL). Inspired by Ansible. Simplifies things and prevents usual mistakes.
