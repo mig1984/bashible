@@ -6,21 +6,19 @@ Yesterday I finally spend the day by implementing changes from past months. The 
 
 What needs to be done:
 
-The question is, why Ansible is so popular? And my answer is: it has lots of modules for setting whatever you imagine. Bashible could offer the same - shared scripts. For instance a script for setting-up a webserver:
+The question is, why Ansible is so popular? And my answer is: it has lots of modules for setting-up whatever you imagine. Bashible could offer the same - shared scripts. For instance a script for a webserver:
 
-$ webserver --add-domain foobar.com
-$ webserver --htpasswd foobar.com user password
-$ webserver --disable-domain foobar.com
+$ webserver --add-domain foobar.com..
+$ webserver --htpasswd foobar.com user password..
+$ webserver --disable-domain foobar.com..
 
 etc.
 
-You can sript whatever you like.
+You can use bash scripts to do whatever you like. Even if I like Python and Ruby very much, still, I never got the point of re-writing shell scripts in these higher languages. Why, if shell was made for file manipulations?
 
-I like Python very much. I love Ruby. But still, I never got the point of re-writing shell scripts in higher languages.
+And finally, there should be a standard way to deploy scripts to multiple machines (aka Ansible's inventory). It still does not exist. Using ssh/pdsh perhaps?
 
-And finally, there should be a standard way to deploy scripts to multiple machines (aka Ansible's inventory). Using ssh/pdsh perhaps?
-
-I am looking forward suggestions!
+I am looking forward to your suggestions!
 
 Jan
 
