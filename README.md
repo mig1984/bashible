@@ -24,7 +24,7 @@ Suggestions and bugfixes are welcome! :-)
 
 ## Example script
 
-`@` represents a task (block of commands), `-` represents a command. Both `@` and `-` are just bash functions with arguments. Each block has it's conditions and only if they match, it's commands are executed.
+`@` represents a task (block of commands), `-` represents a command. Both `@` and `-` are just bash functions with arguments. Each block may have multiple AND or OR conditions.
 
 ```bash
 #!/usr/local/bin/bashible
