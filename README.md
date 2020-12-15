@@ -1,27 +1,3 @@
-# Hi, guys!
-
-I am glad to see Bashible developing. In the beginning, I thought it will be just another useless project. But it seems to be interresting also for others.
-
-Yesterday I finally spend the day by implementing changes from past months. The "core" is getting stable, at least from the "language" perspective.
-
-What needs to be done:
-
-The question is, why Ansible is so popular? And my answer is: it has lots of modules for setting-up whatever you imagine. Bashible could offer the same - shared scripts. For instance a script for a webserver:
-
-$ webserver --add-domain foobar.com  
-$ webserver --htpasswd foobar.com user password  
-$ webserver --disable-domain foobar.com  
-
-etc.
-
-You can use bash scripts to do whatever you like. Even if I like Python and Ruby very much, still, I never got the point of re-writing shell scripts in these higher languages. Why, if shell was made for file manipulations?
-
-And finally, there should be a standard way to deploy scripts to multiple machines (aka Ansible's inventory). It still does not exist. Using ssh/pdsh perhaps?
-
-I am looking forward to your suggestions!
-
-Jan
-
 # BASHIBLE
 
 Bashible is a deployment/automation tool written in Bash (DSL). Inspired by Ansible. Simplifies things and prevents usual mistakes.
@@ -50,8 +26,6 @@ Suggestions and bugfixes are welcome! :-)
 
 `@` represents a block of tasks, `-` represents a task. Both `@` and `-` are just bash functions with arguments.
 
-The working directory is automatically set to the script's. All tasks will stop execution immediately on failure, unless prefixed by "ignore_errors".
-
 ```bash
 #!/usr/local/bin/bashible
 
@@ -67,6 +41,8 @@ The working directory is automatically set to the script's. All tasks will stop 
   when not synced
   - mail me@me.com <<< "synchronzation failed"
 ```
+
+The working directory is automatically set to the script's. All tasks will stop execution immediately on failure, unless prefixed by "ignore_errors".
 
 ![output of the example](example.png)
 
@@ -90,13 +66,10 @@ else
 fi
 ```
 
-## Another example output
-
-(output of running examples/editing_files/add.ble)
-
-![output of add.ble](add.png)
-
 ## Another example
+
+In this example, we are going to set two variables and store an output of 'ls' command.  
+Moreover, the output has to be something, otherwise it fails.
 
 ```bash
 #!/usr/local/bin/bashible
@@ -109,7 +82,18 @@ fi
   - quiet output_to_file errlog.txt -2 rsync /foo /bar
 ```
 
+Both output_to_var and output_to_file accept options: -1|--stdout, -2|--stderr (or both). The output_to_file can also --append to it.  
+By prefixing with 'quiet' no message will be written on terminal.
+
+'is' and 'of' are just sugar words, they do actually nothing, just improve readability.
+
 ## Another example
+
+In this example, a module 'template' is loaded. It's just a sourced file which contains some more functions.
+
+The script expects two arguments (not empty) to be passed on the commandline ($1 and $2). Environment variable HOME has to be also set and not be empty.
+
+The 'template' function is very powerful, you can even generate dynamic html with it. See the examples/template.
 
 ```bash
 #!/usr/local/bin/bashible
@@ -132,12 +116,11 @@ use template
   - mv /home/$HOME/.bashrc.tmp /home/$HOME/.bashrc
 ```
 
-See also examples in the example directory.
-
+The 'is' here is just a sugar word. It actually does nothing and 'empty_dir' is an alias for 'is_empty_dir'. It's up to you, what you prefer.
 
 ## Install & usage
 
-Install bashible and it's modules (sourceable functions - here just one module, "edit"). Copy everything to the same directory.
+Install bashible and it's modules (sourceable functions - here I am going to install just one module, 'edit'). Copy everything to the same directory, for instance /usr/local/bin.
 
 ```bash
 wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible
@@ -148,19 +131,17 @@ mv bashible /usr/local/bin
 mv bashible.edit.ble /usr/local/bin
 ```
 
-Run the script
+Then run the script
 
 ```bash
 bashible my-script.ble ARG1 ARG2 ...
 ```
 
-or put she-bang in the beginning of the script and then run it directly
+or put a she-bang in the beginning of the script and run it as a command
 
 ```bash
 #!/usr/local/bin/bashible
 ```
-
-run it
 
 ```bash
 ./my-script.ble ARG1 ARG2 ...
@@ -206,7 +187,7 @@ run it
 
 ### sugar
 
-These do the same:  
+For better readability, there are some more ways to do the same. 
   
 when not is_empty_dir /home  
 when is not empty_dir /home  
@@ -219,6 +200,8 @@ when is not empty_output of ls /home
   
 result synced rsync /foo /bar  
 register exitcode as 'synced' of rsync /foo /bar  
+
+(The 'is' and 'of' words actually do nothing. 'empty_dir' is an alias for 'is_empty_dir'. The 'register (exitcode (as))' is an alias for 'result'.)
 
 ### file-editing functions - found in bashible.edit module
 
