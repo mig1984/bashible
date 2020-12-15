@@ -68,8 +68,8 @@ fi
 
 ## Another example
 
-In this example, we are going to set two variables and store an output of `ls` command.  
-Moreover, the output has to be something, otherwise it fails.
+In this example, we are going to set two variables and store the output of `ls` command in them.  
+Moreover, the output has to be something, otherwise the execution stops.  
 
 ```bash
 #!/usr/local/bin/bashible
@@ -82,18 +82,18 @@ Moreover, the output has to be something, otherwise it fails.
   - quiet output_to_file errlog.txt -2 rsync /foo /bar
 ```
 
-Both output_to_var and output_to_file accept options: -1|--stdout, -2|--stderr (or both). The output_to_file can also --append to it.  
-By prefixing with `quiet` no message will be written on terminal.
+Both functions `output_to_var` and `output_to_file` accept options: -1|--stdout, -2|--stderr (or both). The `output_to_file` can also --append to it.  
+By prefixing with `quiet`, no message will be written on terminal.
 
-`is` and `of` are just sugar words, they do actually nothing, just improve readability.
+(`is` and `of` are just sugar words, they do actually nothing, but improve readability)
 
 ## Another example
 
-In this example, a module `template` is loaded. It's just a sourced file which contains some more functions.
+A module `template` is loaded. A module is a sourceable file in the same directory as `bashible` and adds some more functions.
 
-The script expects two arguments (not empty) to be passed on the commandline ($1 and $2). Environment variable HOME has to be also set and not be empty.
+In this example, the script expects two arguments passed from the commandline ($1, $2), they should not be empty. Also an environment variable HOME has to be something.
 
-The `template` function is very powerful, you can even generate dynamic html with it. See the examples/template.
+The `template` function is very powerful, you can even generate dynamic html with it. See examples/template directory.
 
 ```bash
 #!/usr/local/bin/bashible
@@ -112,11 +112,14 @@ use template
 @ Creating .bashrc from a template
   # the template needs two variables to be set, HOST and PORT
   # these are set by arguments of this script ($1 and $2)
-  - output_to_file /home/$HOME/.bashrc.tmp template /mnt/templates/bashrc.tpl
-  - mv /home/$HOME/.bashrc.tmp /home/$HOME/.bashrc
+  - cd /home/$HOME/
+  - output_to_file .bashrc.tmp template /mnt/templates/bashrc.tpl
+  - mv .bashrc.tmp .bashrc
 ```
 
-The `is` here is just a sugar word. It actually does nothing and `empty_dir` is an alias for `is_empty_dir`. It's up to you, what you prefer.
+The `is` is a sugar word. It actually does nothing and `empty_dir` is an alias for `is_empty_dir`. It's up to you, what you prefer.
+
+If you use `cd` within a block, it works as expected, but next block will have it's working directory back. On each block start, bashible does chdir to the base directory. You can change it by `base_dir`.
 
 ## Install & usage
 
