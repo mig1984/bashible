@@ -1,6 +1,6 @@
 #### - VARIABLE = VALUE
 
-Conditionally set a variable to a value.
+If you want to set a variable if conditions of a block match, do it like this:
 
 ##### Example:
 
