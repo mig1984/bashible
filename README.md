@@ -42,7 +42,7 @@ Suggestions and bugfixes are welcome! :-)
   - mail me@me.com <<< "synchronzation failed"
 ```
 
-The working directory is automatically set to the script's. All tasks will stop execution immediately on failure, unless prefixed by "ignore_errors".
+The working directory is automatically set to the script's. Execution will stop immediately on failure, unless you prefix commands by "ignore_errors".
 
 ![output of the example](example.png)
 
