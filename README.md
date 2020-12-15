@@ -26,6 +26,8 @@ Suggestions and bugfixes are welcome! :-)
 
 `@` represents a task (block of commands), `-` represents a command. Both `@` and `-` are just bash functions with arguments. Each block may have multiple AND or OR conditions.
 
+The working directory is automatically set to the script's. Execution will stop immediately on failure, unless you prefix a command by `ignore_errors` (or register it's exitcode like in this example).
+
 ```bash
 #!/usr/local/bin/bashible
 
@@ -41,8 +43,6 @@ Suggestions and bugfixes are welcome! :-)
   when not synced
   - mail me@me.com <<< "synchronzation failed"
 ```
-
-The working directory is automatically set to the script's. Execution will stop immediately on failure, unless you prefix commands by "ignore_errors".
 
 ![output of the example](example.png)
 
@@ -68,7 +68,7 @@ fi
 
 ## Another example
 
-In this example, we are going to set two variables and store an output of 'ls' command.  
+In this example, we are going to set two variables and store an output of `ls` command.  
 Moreover, the output has to be something, otherwise it fails.
 
 ```bash
@@ -83,17 +83,17 @@ Moreover, the output has to be something, otherwise it fails.
 ```
 
 Both output_to_var and output_to_file accept options: -1|--stdout, -2|--stderr (or both). The output_to_file can also --append to it.  
-By prefixing with 'quiet' no message will be written on terminal.
+By prefixing with `quiet` no message will be written on terminal.
 
-'is' and 'of' are just sugar words, they do actually nothing, just improve readability.
+`is` and `of` are just sugar words, they do actually nothing, just improve readability.
 
 ## Another example
 
-In this example, a module 'template' is loaded. It's just a sourced file which contains some more functions.
+In this example, a module `template` is loaded. It's just a sourced file which contains some more functions.
 
 The script expects two arguments (not empty) to be passed on the commandline ($1 and $2). Environment variable HOME has to be also set and not be empty.
 
-The 'template' function is very powerful, you can even generate dynamic html with it. See the examples/template.
+The `template` function is very powerful, you can even generate dynamic html with it. See the examples/template.
 
 ```bash
 #!/usr/local/bin/bashible
@@ -116,11 +116,11 @@ use template
   - mv /home/$HOME/.bashrc.tmp /home/$HOME/.bashrc
 ```
 
-The 'is' here is just a sugar word. It actually does nothing and 'empty_dir' is an alias for 'is_empty_dir'. It's up to you, what you prefer.
+The `is` here is just a sugar word. It actually does nothing and `empty_dir` is an alias for `is_empty_dir`. It's up to you, what you prefer.
 
 ## Install & usage
 
-Install bashible and it's modules (sourceable functions - here I am going to install just one module, 'edit'). Copy everything to the same directory, for instance /usr/local/bin.
+Install bashible and it's modules (sourceable functions - here I am going to install just one module, `edit`). Copy everything to the same directory, for instance /usr/local/bin.
 
 ```bash
 wget https://raw.githubusercontent.com/mig1984/bashible/master/bashible
@@ -201,7 +201,7 @@ when is not empty_output of ls /home
 result synced rsync /foo /bar  
 register exitcode as 'synced' of rsync /foo /bar  
 
-(The 'is' and 'of' words actually do nothing. 'empty_dir' is an alias for 'is_empty_dir'. The 'register (exitcode (as))' is an alias for 'result'.)
+(The `is` and `of` words actually do nothing. `empty_dir` is an alias for `is_empty_dir`. The `register (exitcode (as))` is an alias for `result`.)
 
 ### file-editing functions - found in bashible.edit module
 
