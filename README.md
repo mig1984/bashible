@@ -83,17 +83,18 @@ Moreover, the output has to be something, otherwise the execution stops.
 ```
 
 Both functions `output_to_var` and `output_to_file` accept options: -1|--stdout, -2|--stderr (or both). The `output_to_file` can also --append to it.  
-By prefixing with `quiet`, no message will be written on terminal.
+
+By prefixing a command with `quiet`, no messages will be written on terminal.
 
 (`is` and `of` are just sugar words, they do actually nothing, but improve readability)
 
 ## Another example
 
-A module `template` is loaded. A module is a sourceable file in the same directory as `bashible` and adds some more functions.
+A module `template` is loaded. The module is a sourceable file expected to be in the same directory as `bashible` is. It adds some more functions.
 
 In this example, the script expects two arguments passed from the commandline ($1, $2), they should not be empty. Also an environment variable HOME has to be something.
 
-The `template` function is very powerful, you can even generate dynamic html with it. See examples/template directory.
+The `template` function is very powerful even it has just 18 lines of code. You can generate dynamic html with it, see examples/template directory.
 
 ```bash
 #!/usr/local/bin/bashible
