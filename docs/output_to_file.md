@@ -7,8 +7,11 @@ Options:
 -1|--stdout
 -2|--stderr
 -a|--append
+-t|--tee
 
-Internally it does a redirect: single '>' or double '>>' when --append is specified.
+Unless --tee is used, it does a redirect: single '>' or double '>>' when --append is specified.
+
+When --tee is used, it duplicates the output to the file and on the terminal.
 
 ```bash
 

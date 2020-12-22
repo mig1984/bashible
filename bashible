@@ -5,7 +5,7 @@
 # https://github.com/mig1984/bashible
 
 ble_version() {
-  echo 0.2.1
+  echo 0.3.1
 }
 
 ble_help() {
@@ -385,6 +385,7 @@ output_to_file() {
   local stdout=0
   local stderr=0
   local append=0
+  local tee=0
   local cnt=0
 
   local dest=$1; shift
@@ -407,14 +408,28 @@ output_to_file() {
       let cnt=cnt+1
       shift
       ;;
+    -t|--tee)
+      tee=1
+      let cnt=cnt+1
+      shift
+      ;;
     *) # a command
 
-      ((cnt==0)) && stdout=1 # default if no opts
+      ((cnt==0)) && stdout=1 # default - when no opts
+
       local s=''
       local ap=''
-      ((append==1)) && ap=">>" || ap=">"
-      ((stdout==1)) && s="$s 1$ap\$dest"
-      ((stderr==1)) && s="$s 2$ap\$dest"
+
+      if ((tee==1)); then
+        ((stderr==1)) && s="$s 2>&1"
+        ((stdout==0)) && s="$s 1>/dev/null"
+        ((append==1)) && ap="-a"
+        s="$s | tee $ap $dest"
+      else
+        ((append==1)) && ap=">>" || ap=">"
+        ((stdout==1)) && s="$s 1$ap\$dest"
+        ((stderr==1)) && s="$s 2$ap\$dest"
+      fi
 
       ble_check_cmd "$1"
       local ex=0

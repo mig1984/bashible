@@ -1,3 +1,9 @@
+0.3.1
+  - output_to_file accepts --tee (to duplicate output to the file and on the terminal)
+
+0.3.0
+  - release
+
 0.2.1
   - bashible.edit.ble module fixed (pull request "use whole line matching for add_line")
 
