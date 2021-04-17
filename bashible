@@ -42,7 +42,7 @@ ble_print_block() {
 }
 
 ble_print_task() {
-  echo -e "\033[37m - "$*" \033[0m" >&2
+  echo -e "\033[37m - $* \033[0m" >&2
 }
 
 ble_print_fail() {
