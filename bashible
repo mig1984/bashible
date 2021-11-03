@@ -5,7 +5,7 @@
 # https://github.com/mig1984/bashible
 
 ble_version() {
-  echo 0.3.1
+  echo 0.3.2
 }
 
 ble_help() {
@@ -231,6 +231,7 @@ or() {
     if test ${#} -gt 1  && test "$2" = "="; then
       ble_print_task "$*"
       var=$1
+      shift
       shift
       eval "$var=\$*"
       return
